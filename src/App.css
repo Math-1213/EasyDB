@@ -104,6 +104,136 @@ body {
   word-break: break-all;
 }
 
+.form-group-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-group-row .form-group {
+  flex: 1;
+}
+
+/* CONTAINER DE PRESETS */
+.presets-section {
+  width: 100%;
+  margin-bottom: 15px;
+  background-color: #1e1e1e;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #3c3c3c;
+}
+
+.preset-label {
+  font-size: 11px;
+  color: #858585;
+  text-transform: uppercase;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.presets-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.preset-badge {
+  background-color: #2d2d2d;
+  border: 1px solid #444;
+  color: #ccc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.preset-badge:hover {
+  background-color: #383838;
+  color: #fff;
+  border-color: #555;
+}
+
+.btn-delete-preset {
+  background: transparent;
+  border: none;
+  color: #858585;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.btn-delete-preset:hover {
+  color: #e57373;
+}
+
+/* SALVAR PRESET FORM */
+.save-preset-container {
+  display: flex;
+  gap: 8px;
+  margin: 15px 0 10px 0;
+  border-top: 1px solid #3c3c3c;
+  padding-top: 12px;
+}
+
+.preset-name-input {
+  flex: 1;
+  background-color: #1e1e1e;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  color: white;
+  padding: 6px 10px;
+  font-size: 12px;
+  outline: none;
+}
+
+.preset-name-input:focus {
+  border-color: #4caf50;
+}
+
+.btn-save-preset {
+  background-color: #2d2d2d;
+  color: #ccc;
+  border: 1px solid #444;
+  padding: 0 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-save-preset:hover:not(:disabled) {
+  background-color: #383838;
+  color: #fff;
+}
+
+.btn-save-preset:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-connect-main {
+  width: 100%;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.btn-connect-main:hover {
+  background-color: #43a047;
+}
 /* ==========================================================================
    LAYOUT PRINCIPAL DASHBOARD & SIDEBAR
    ========================================================================== */
