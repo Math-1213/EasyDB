@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Plus, Trash2, Play, Columns, Filter } from "lucide-react";
-import "../App.css";
+import "./styles.css";
 
 const OPERATORS = [
   { value: "=", label: "=" },

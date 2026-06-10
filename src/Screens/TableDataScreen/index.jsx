@@ -6,7 +6,8 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import "../App.css";
+import "./styles.css";
+import "../../App.css";
 
 const OPERATORS = [
   { value: "=", label: "=" },

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { ReactFlow, Background, Controls, MarkerType } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import "../App.css";
+import "./styles.css";
+import "../../App.css";
 
 export default function UmlScreen({ selectedTable }) {
   const [nodes, setNodes] = useState([]);

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Key, Link, ShieldAlert } from "lucide-react";
-import "../App.css";
+import "./styles.css";
+import "../../App.css";
 
 export default function TableStructureScreen({ selectedTable }) {
   const [structure, setStructure] = useState([]);

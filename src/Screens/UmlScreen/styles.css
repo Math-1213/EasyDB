@@ -1,0 +1,260 @@
+/* ==========================================================================
+   ABA 4: QUERY DINÂMICA (CONSTRUTOR VISUAL)
+   ========================================================================== */
+.dynamic-screen-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.dynamic-workspace-grid {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+.builder-controls-panel {
+  width: 320px;
+  min-width: 320px;
+  background-color: #252526;
+  border-right: 1px solid #3c3c3c;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.control-card {
+  background-color: #1e1e1e;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  padding: 12px;
+  width: 100%; /* Garante que respeite o limite do painel */
+}
+
+.margin-top-card {
+  margin-top: 15px;
+}
+
+.card-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #2d2d2d;
+  padding-bottom: 6px;
+}
+
+.bulk-selection-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.btn-link-action {
+  background: none;
+  border: none;
+  color: #4caf50;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-link-action:hover {
+  text-decoration: underline;
+}
+
+.columns-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.checkbox-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.checkbox-item-row input {
+  width: auto;
+  cursor: pointer;
+}
+
+.btn-add-where {
+  background-color: #2d2d2d;
+  color: #ccc;
+  border: 1px solid #444;
+  width: 100%;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.btn-add-where:hover {
+  background-color: #383838;
+  color: #fff;
+}
+
+.where-clauses-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* LINHA DO FILTRO CORRIGIDA */
+.dynamic-where-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #252526;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #3c3c3c;
+  width: 100%;
+}
+
+/* DISTRIBUIÇÃO DINÂMICA DE ESPAÇO */
+.dynamic-where-row .filter-select.compact:nth-child(1) {
+  flex: 2; /* Campo 'id' ganha espaço proporcional */
+  min-width: 50px;
+}
+
+.dynamic-where-row .filter-select.compact.operator {
+  flex: 3; /* Operador longo ganha mais espaço para não quebrar texto */
+  min-width: 100px;
+}
+
+.dynamic-where-row .filter-val-input.compact {
+  flex: 2; /* Input de valor se ajusta ao resto */
+  min-width: 60px;
+  width: 100%; /* Sobrescreve largura fixa antiga */
+}
+
+.filter-select.compact,
+.filter-val-input.compact {
+  font-size: 11px;
+  height: 26px;
+  padding: 2px 4px;
+  background-color: #1e1e1e;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 4px;
+  outline: none;
+}
+
+.filter-select.compact:focus,
+.filter-val-input.compact:focus {
+  border-color: #4caf50;
+}
+
+.btn-delete-where {
+  background: transparent;
+  border: none;
+  color: #858585;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-delete-where:hover {
+  color: #e57373;
+}
+
+.builder-preview-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sql-live-preview-box {
+  background-color: #151515;
+  padding: 12px 15px;
+  border-bottom: 1px solid #3c3c3c;
+}
+
+.preview-header {
+  font-size: 11px;
+  color: #757575;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.sql-live-preview-box code {
+  font-family: Consolas, monospace;
+  color: #b5cea8;
+  font-size: 12px;
+  word-break: break-all;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.preview-action-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-execute-dynamic {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.btn-execute-dynamic:hover {
+  background-color: #43a047;
+}
+
+.dynamic-table-results {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.sql-dynamic-textarea {
+  width: 100%;
+  height: 70px;
+  background-color: #151515;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  color: #b5cea8;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  padding: 8px 10px;
+  resize: vertical;
+  outline: none;
+  margin-bottom: 6px;
+}
+
+.sql-dynamic-textarea:focus {
+  border-color: #4caf50;
+}

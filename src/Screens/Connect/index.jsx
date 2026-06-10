@@ -1,15 +1,11 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Save, Trash2 } from "lucide-react";
-import "../App.css";
+import "../../App.css";
+import "./styles.css";
 
 function ConnectScreen({ onConnectSuccess }) {
   const [config, setConfig] = useState({
-    // host: "ep-soft-firefly-aca18i1s-pooler.sa-east-1.aws.neon.tech",
-    // port: "5432",
-    // user: "neondb_owner",
-    // password: "npg_BbOf2LH5GYZC",
-    // database: "neondb",
     host: "",
     port: "5432",
     user: "",

@@ -1,0 +1,226 @@
+/* ==========================================================================
+   TELA DE LOGIN / CONEXÃO
+   ========================================================================== */
+.login-container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 24px;
+  background: #252526;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.login-container h1 {
+  margin-bottom: 6px;
+  color: #4caf50;
+  text-align: center;
+  font-size: 24px;
+}
+
+.login-container p {
+  text-align: center;
+  color: #858585;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #cccccc;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px 10px;
+  background: #3c3c3c;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.form-group input:focus {
+  border-color: #4caf50;
+  outline: none;
+}
+
+.login-container button {
+  width: 100%;
+  padding: 10px;
+  background: #4caf50;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.login-container button:hover {
+  background: #43a047;
+}
+
+.status-message {
+  margin-top: 15px;
+  padding: 10px;
+  background: #2d2d2d;
+  border-left: 4px solid #4caf50;
+  font-size: 13px;
+  color: #ccc;
+  word-break: break-all;
+}
+
+.form-group-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-group-row .form-group {
+  flex: 1;
+}
+
+/* CONTAINER DE PRESETS */
+.presets-section {
+  width: 100%;
+  margin-bottom: 15px;
+  background-color: #1e1e1e;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #3c3c3c;
+}
+
+.preset-label {
+  font-size: 11px;
+  color: #858585;
+  text-transform: uppercase;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.presets-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.preset-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #3c3c3c;
+  transition: all 0.2s ease;
+  height: 28px;
+  box-sizing: border-box;
+}
+
+.preset-badge:hover {
+  background-color: #383838;
+  border-color: #4caf50;
+}
+
+.btn-delete-preset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #888;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  height: 100%;
+  transition: color 0.2s ease;
+}
+
+.btn-delete-preset:hover {
+  color: #ff4d4d;
+}
+
+.preset-badge span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+
+/* SALVAR PRESET FORM */
+.save-preset-container {
+  display: flex;
+  gap: 8px;
+  margin: 15px 0 10px 0;
+  border-top: 1px solid #3c3c3c;
+  padding-top: 12px;
+}
+
+.preset-name-input {
+  flex: 1;
+  background-color: #1e1e1e;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  color: white;
+  padding: 6px 10px;
+  font-size: 12px;
+  outline: none;
+}
+
+.preset-name-input:focus {
+  border-color: #4caf50;
+}
+
+.btn-save-preset {
+  background-color: #2d2d2d;
+  color: #ccc;
+  border: 1px solid #444;
+  padding: 0 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-save-preset:hover:not(:disabled) {
+  background-color: #383838;
+  color: #fff;
+}
+
+.btn-save-preset:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-connect-main {
+  width: 100%;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.btn-connect-main:hover {
+  background-color: #43a047;
+}

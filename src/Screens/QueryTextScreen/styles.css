@@ -1,0 +1,73 @@
+/* ==========================================================================
+   ABA 3: QUERY TEXTUAL (SQL EDITOR)
+   ========================================================================== */
+.query-screen-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.query-editor-zone {
+  padding: 15px;
+  background-color: #252526;
+  border-bottom: 1px solid #3c3c3c;
+  display: flex;
+  flex-direction: column;
+}
+
+.sql-editor-box {
+  width: 100%;
+  height: 180px;
+  background-color: #151515;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  color: #9cdcfe;
+  font-family: Consolas, monospace;
+  padding: 12px;
+  resize: vertical;
+  outline: none;
+}
+
+.sql-editor-box:focus {
+  border-color: #0e639c;
+}
+
+.query-actions-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.btn-execute {
+  background-color: #0e639c;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.btn-execute:hover {
+  background-color: #1177bb;
+}
+
+.query-result-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #1e1e1e;
+}
+
+.query-status-bar {
+  background-color: #2d2d2d;
+  padding: 6px 15px;
+  font-size: 12px;
+  color: #81c784;
+  border-bottom: 1px solid #3c3c3c;
+  display: flex;
+  align-items: center;
+}

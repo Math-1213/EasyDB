@@ -1,0 +1,70 @@
+/* ==========================================================================
+   ABA 2: ESTRUTURA DA TABELA
+   ========================================================================== */
+.structure-screen-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 15px;
+}
+
+.structure-header {
+  margin-bottom: 15px;
+}
+
+.structure-header h3 {
+  font-size: 16px;
+  color: #ccc;
+}
+
+.structure-header h3 span {
+  color: #4caf50;
+}
+
+.cell-keys-container {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-pk {
+  color: #ffb74d;
+}
+.icon-fk {
+  color: #64b5f6;
+}
+.col-name-cell {
+  font-weight: bold;
+  color: #fff !important;
+}
+
+.col-type-cell code,
+.col-default-cell code {
+  background-color: #2d2d2d;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #ce9178;
+  font-size: 12px;
+}
+
+.badge-nullable {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.badge-nullable.yes {
+  background-color: #2e3c2e;
+  color: #81c784;
+}
+.badge-nullable.no {
+  background-color: #3c2e2e;
+  color: #e57373;
+}
+.null-text {
+  color: #555;
+  font-style: italic;
+  font-size: 12px;
+}

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Play, Database, AlertCircle } from "lucide-react";
-import "../App.css";
+import "./styles.css";
+import "../../App.css";
 
 export default function QueryTextScreen({ selectedTable }) {
   const [sql, setSql] = useState("");

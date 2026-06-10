@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Database, LogOut } from "lucide-react"; // Opcional se usar ícones
-import "../App.css";
+import "./styles.css";
+import "../../App.css";
 
-import TableDataScreen from "./TableDataScreen";
-import TableStructureScreen from "./StructureScreen";
-import QueryTextScreen from "./QueryTextScreen";
-import QueryDynamicScreen from "./QueryDynamicScreen";
-import UmlScreen from "./UmlScreen";
+import TableDataScreen from "../TableDataScreen";
+import TableStructureScreen from "../StructureScreen";
+import QueryTextScreen from "../QueryTextScreen";
+import QueryDynamicScreen from "../QueryDynamicScreen";
+import UmlScreen from "../UmlScreen";
 
 function DashboardScreen({ onDisconnect }) {
   const [databases, setDatabases] = useState([]);

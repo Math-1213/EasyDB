@@ -1,0 +1,118 @@
+/* ==========================================================================
+   ABA 1: VISUALIZAÇÃO DE DADOS & FILTROS AVANÇADOS
+   ========================================================================== */
+.table-screen-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.filter-builder-zone {
+  background-color: #252526;
+  padding: 10px 15px;
+  border-bottom: 1px solid #3c3c3c;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-builder-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.btn-add-filter {
+  background-color: #3c3c3c;
+  color: #ccc;
+  border: 1px solid #555;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.btn-add-filter:hover {
+  background-color: #454545;
+  color: #fff;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn 0.12s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filter-select,
+.filter-val-input {
+  background-color: #1e1e1e;
+  color: white;
+  border: 1px solid #555;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  outline: none;
+  height: 28px;
+}
+
+.filter-select:focus,
+.filter-val-input:focus {
+  border-color: #4caf50;
+}
+
+.filter-select.operator {
+  color: #ffb74d;
+  font-weight: bold;
+}
+
+.filter-val-input {
+  width: 130px;
+}
+
+.filter-between-and {
+  color: #888;
+  font-size: 12px;
+}
+
+.btn-remove-filter {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 4px;
+  opacity: 0.7;
+}
+
+.btn-remove-filter:hover {
+  opacity: 1;
+}
+
+.cell-edit-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #3c3c3c;
+  color: #fff;
+  border: 1px solid #4caf50;
+  padding: 0 11px;
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  box-sizing: border-box;
+  z-index: 5;
+}
