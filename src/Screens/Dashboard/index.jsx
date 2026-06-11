@@ -27,6 +27,7 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("dados");
+  const [joinedTables, setJoinedTables] = useState([]);
 
   // Estado e Referência para a largura da Sidebar
   const [sidebarWidth, setSidebarWidth] = useState(240);
@@ -117,6 +118,29 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
     document.body.style.cursor = "default";
   };
 
+  const handleTableClick = (e, tableName) => {
+    if (e.ctrlKey || e.shiftKey) {
+      // Força ir para a aba de Query Dinâmica para ver a alteração
+      setActiveTab("query_dinamica");
+
+      if (tableName === selectedTable) return; // Não faz nada com a tabela base
+
+      setJoinedTables((prev) => {
+        if (prev.includes(tableName)) {
+          // Se já está no JOIN, remove (desseleciona)
+          return prev.filter((t) => t !== tableName);
+        } else {
+          // Se não está, adiciona
+          return [...prev, tableName];
+        }
+      });
+    } else {
+      // Clique comum: limpa os Joins anteriores e troca a tabela base
+      setJoinedTables([]);
+      handleSelectTable(tableName);
+    }
+  };
+
   const renderTabContent = () => {
     if (loading && activeTab === "dados") {
       return <div className="loading-state">Carregando dados...</div>;
@@ -129,7 +153,13 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
       case "query_texto":
         return <QueryTextScreen selectedTable={selectedTable} />;
       case "query_dinamica":
-        return <QueryDynamicScreen selectedTable={selectedTable} />;
+        // Passando os novos estados de controle para a tela dinâmica
+        return (
+          <QueryDynamicScreen
+            selectedTable={selectedTable}
+            joinedTables={joinedTables}
+          />
+        );
       case "uml":
         return <UmlScreen selectedTable={selectedTable} />;
       default:
@@ -155,8 +185,14 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
           {tables.map((table) => (
             <li
               key={table}
-              className={selectedTable === table ? "active" : ""}
-              onClick={() => handleSelectTable(table)}
+              className={
+                selectedTable === table
+                  ? "active"
+                  : joinedTables.includes(table)
+                    ? "joined-active"
+                    : ""
+              }
+              onClick={(e) => handleTableClick(e, table)} // <-- Passa o evento aqui
             >
               <TableProperties size={14} className="li-icon" />{" "}
               <span>{table}</span>

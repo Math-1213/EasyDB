@@ -13,17 +13,19 @@
   flex: 1;
   height: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 .builder-controls-panel {
-  width: 320px;
-  min-width: 320px;
+  min-width: 250px;
   background-color: #252526;
   border-right: 1px solid #3c3c3c;
   padding: 15px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
+  transition: none;
 }
 
 .control-card {
@@ -150,6 +152,8 @@
 
 .filter-select.compact,
 .filter-val-input.compact {
+  resize: none;
+  width: 100%;
   font-size: 11px;
   height: 26px;
   padding: 2px 4px;
@@ -185,6 +189,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
 .sql-live-preview-box {
@@ -234,10 +239,10 @@
 
 .dynamic-table-results {
   flex: 1;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  position: relative;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .sql-dynamic-textarea {
@@ -257,4 +262,81 @@
 
 .sql-dynamic-textarea:focus {
   border-color: #4caf50;
+}
+
+.active-joins-card {
+  border-left: 3px solid #4caf50;
+}
+
+.joined-tables-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.join-tag {
+  background-color: #2d2d2d;
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  font-family: monospace;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.prefixed-col-name small {
+  color: #757575;
+  margin-right: 2px;
+}
+
+.prefixed-col-name strong {
+  color: #ddd;
+}
+
+.table-responsive-wrapper {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid #3c3c3c;
+  background-color: #1e1e1e;
+  position: relative;
+}
+
+.data-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  background: #2d2d2d;
+  z-index: 10;
+  padding: 10px;
+  border: 1px solid #444;
+  cursor: col-resize; /* Indica que é redimensionável */
+  user-select: none;
+}
+
+.data-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 8px;
+  border: 1px solid #333;
+}
+
+.panel-resizer {
+  width: 6px;
+  cursor: col-resize;
+  background-color: #3c3c3c;
+  z-index: 100;
+  border-left: 1px solid #222;
+  border-right: 1px solid #222;
+  /* Melhora o feedback visual */
+  transition: background-color 0.1s;
+}
+
+.panel-resizer:hover {
+  background-color: #4caf50;
 }

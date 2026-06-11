@@ -409,8 +409,11 @@ pub async fn execute_raw_query(
         let _ = connection.await;
     });
 
+    println!("Executando SQL: {}", sql);
+
     match client.query(&sql, &[]).await {
         Ok(pg_rows) => {
+            println!("Linhas retornadas: {}", pg_rows.len());
             if pg_rows.is_empty() {
                 return Ok(QueryResult {
                     columns: Vec::new(),

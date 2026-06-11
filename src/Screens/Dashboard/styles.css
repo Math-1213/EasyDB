@@ -232,3 +232,9 @@
   justify-content: center;
   height: 100%;
 }
+
+.table-list li.joined-active {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+  border-left: 3px solid #4caf50;
+}
