@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Key, Link, ShieldAlert } from "lucide-react";
+import { Key, Link } from "lucide-react";
 import "./styles.css";
-import "../../App.css";
 
 export default function TableStructureScreen({ selectedTable }) {
   const [structure, setStructure] = useState([]);
@@ -56,56 +55,73 @@ export default function TableStructureScreen({ selectedTable }) {
 
       <div className="table-responsive-wrapper">
         <table className="data-table">
+          <colgroup>
+            <col style={{ width: "80px" }} />
+            <col style={{ width: "25%" }} />
+            <col style={{ width: "25%" }} />
+            <col style={{ width: "15%" }} />
+            <col style={{ width: "35%" }} />
+          </colgroup>
           <thead>
             <tr>
-              <th style={{ width: "60px", textAlign: "center" }}>Keys</th>
+              <th style={{ textAlign: "center" }}>Keys</th>
               <th>Coluna</th>
               <th>Tipo de Dado</th>
-              <th>Aceita Nulo (Nullable)</th>
+              <th>Nullable</th>
               <th>Valor Padrão (Default)</th>
             </tr>
           </thead>
           <tbody>
-            {structure.map((col) => (
-              <tr key={col.name}>
-                <td style={{ textAlign: "center" }}>
-                  <div className="cell-keys-container">
-                    {col.is_primary && (
-                      <Key
-                        size={14}
-                        className="icon-pk"
-                        title="Primary Key (Chave Primária)"
-                      />
+            {structure.map((col) => {
+              // Gera o texto explicativo caso a coluna seja uma FK
+              const fkTitle = col.foreign_target_table
+                ? `Foreign Key -> References ${col.foreign_target_table}(${col.foreign_target_column})`
+                : "Foreign Key (Chave Estrangeira)";
+
+              return (
+                <tr key={col.name}>
+                  <td style={{ textAlign: "center" }}>
+                    <div className="cell-keys-container">
+                      {col.is_primary && (
+                        <Key
+                          size={14}
+                          className="icon-pk"
+                          title="Primary Key (Chave Primária)"
+                        />
+                      )}
+                      {col.is_foreign && (
+                        <Link size={14} className="icon-fk" title={fkTitle} />
+                      )}
+                    </div>
+                  </td>
+                  <td className="col-name-cell">
+                    {col.name}
+                    {col.foreign_target_table && (
+                      <span className="fk-reference-lbl">
+                        ➔ {col.foreign_target_table}
+                      </span>
                     )}
-                    {col.is_foreign && (
-                      <Link
-                        size={14}
-                        className="icon-fk"
-                        title="Foreign Key (Chave Estrangeira)"
-                      />
+                  </td>
+                  <td className="col-type-cell">
+                    <code>{col.data_type}</code>
+                  </td>
+                  <td>
+                    <span
+                      className={`badge-nullable ${col.is_nullable === "YES" ? "yes" : "no"}`}
+                    >
+                      {col.is_nullable === "YES" ? "NULL" : "NOT NULL"}
+                    </span>
+                  </td>
+                  <td className="col-default-cell">
+                    {col.column_default ? (
+                      <code>{col.column_default}</code>
+                    ) : (
+                      <span className="null-text">none</span>
                     )}
-                  </div>
-                </td>
-                <td className="col-name-cell">{col.name}</td>
-                <td className="col-type-cell">
-                  <code>{col.data_type}</code>
-                </td>
-                <td>
-                  <span
-                    className={`badge-nullable ${col.is_nullable === "YES" ? "yes" : "no"}`}
-                  >
-                    {col.is_nullable}
-                  </span>
-                </td>
-                <td className="col-default-cell">
-                  {col.column_default ? (
-                    <code>{col.column_default}</code>
-                  ) : (
-                    <span className="null-text">none</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

@@ -16,6 +16,8 @@ pub struct ColumnStructure {
     column_default: Option<String>,
     is_primary: bool,
     is_foreign: bool,
+    foreign_target_table: Option<String>,
+    foreign_target_column: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -331,17 +333,45 @@ pub async fn get_table_structure(
         return Err("Nome de tabela inválido".to_string());
     }
 
+    // Query robusta para buscar metadados básicos e os alvos de FKs se existirem
     let query = "
-        SELECT c.column_name, c.data_type, c.is_nullable, c.column_default,
-        EXISTS (SELECT 1 FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name WHERE tc.table_name = c.table_name AND kcu.column_name = c.column_name AND tc.constraint_type = 'PRIMARY KEY') as is_primary,
-        EXISTS (SELECT 1 FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name WHERE tc.table_name = c.table_name AND kcu.column_name = c.column_name AND tc.constraint_type = 'FOREIGN KEY') as is_foreign
-        FROM information_schema.columns c WHERE c.table_schema = 'public' AND c.table_name = $1 ORDER BY c.ordinal_position;
+        SELECT 
+            c.column_name, 
+            c.data_type, 
+            c.is_nullable, 
+            c.column_default,
+            EXISTS (
+                SELECT 1 FROM information_schema.table_constraints tc 
+                JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name 
+                WHERE tc.table_name = c.table_name AND kcu.column_name = c.column_name AND tc.constraint_type = 'PRIMARY KEY'
+            ) as is_primary,
+            EXISTS (
+                SELECT 1 FROM information_schema.table_constraints tc 
+                JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name 
+                WHERE tc.table_name = c.table_name AND kcu.column_name = c.column_name AND tc.constraint_type = 'FOREIGN KEY'
+            ) as is_foreign,
+            fk.target_table,
+            fk.target_column
+        FROM information_schema.columns c
+        LEFT JOIN (
+            SELECT 
+                kcu.column_name,
+                ccu.table_name AS target_table,
+                ccu.column_name AS target_column
+            FROM information_schema.table_constraints tc
+            JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name
+            JOIN information_schema.constraint_column_usage ccu ON tc.constraint_name = ccu.constraint_name
+            WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = $1
+        ) fk ON c.column_name = fk.column_name
+        WHERE c.table_schema = 'public' AND c.table_name = $1 
+        ORDER BY c.ordinal_position;
     ";
 
     let rows = client
         .query(query, &[&table_name])
         .await
         .map_err(|e| e.to_string())?;
+
     let mut structure = Vec::new();
     for row in rows {
         structure.push(ColumnStructure {
@@ -351,6 +381,8 @@ pub async fn get_table_structure(
             column_default: row.get(3),
             is_primary: row.get(4),
             is_foreign: row.get(5),
+            foreign_target_table: row.get(6),
+            foreign_target_column: row.get(7),
         });
     }
     Ok(structure)

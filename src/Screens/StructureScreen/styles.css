@@ -1,24 +1,30 @@
 /* ==========================================================================
-   ABA 2: ESTRUTURA DA TABELA
+   ABA 2: ESTRUTURA DA TABELA (MELHORADO)
    ========================================================================== */
 .structure-screen-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 15px;
+  background-color: #18181b;
+  box-sizing: border-box;
 }
 
 .structure-header {
-  margin-bottom: 15px;
+  padding: 16px;
+  background-color: #0f172a;
+  border-bottom: 1px solid #1e293b;
 }
 
 .structure-header h3 {
-  font-size: 16px;
-  color: #ccc;
+  font-size: 15px;
+  color: #94a3b8;
+  margin: 0;
+  font-weight: 500;
 }
 
 .structure-header h3 span {
-  color: #4caf50;
+  color: #3b82f6; /* Combinando com o tom azul de destaque */
+  font-weight: 600;
 }
 
 .cell-keys-container {
@@ -29,42 +35,62 @@
 }
 
 .icon-pk {
-  color: #ffb74d;
+  color: #f59e0b;
 }
+
 .icon-fk {
-  color: #64b5f6;
+  color: #3b82f6;
+  cursor: help; /* Indica visualmente que há um tooltip ao parar o mouse */
 }
+
 .col-name-cell {
-  font-weight: bold;
-  color: #fff !important;
+  font-weight: 600;
+  color: #f4f4f5 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Label discreta ao lado do nome da coluna para ver a referência direto na lista */
+.fk-reference-lbl {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 400;
+  background-color: rgba(59, 130, 246, 0.08);
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 
 .col-type-cell code,
 .col-default-cell code {
-  background-color: #2d2d2d;
-  padding: 2px 6px;
+  background-color: #27272a;
+  padding: 3px 6px;
   border-radius: 4px;
-  color: #ce9178;
+  color: #fda4af;
   font-size: 12px;
+  font-family: monospace;
 }
 
 .badge-nullable {
-  font-size: 11px;
+  font-size: 10px;
   padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: bold;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 .badge-nullable.yes {
-  background-color: #2e3c2e;
-  color: #81c784;
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
 }
+
 .badge-nullable.no {
-  background-color: #3c2e2e;
-  color: #e57373;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }
+
 .null-text {
-  color: #555;
+  color: #4b5563;
   font-style: italic;
   font-size: 12px;
 }
