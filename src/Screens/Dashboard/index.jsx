@@ -10,7 +10,7 @@ import QueryTextScreen from "../QueryTextScreen";
 import QueryDynamicScreen from "../QueryDynamicScreen";
 import UmlScreen from "../UmlScreen";
 
-function DashboardScreen({ onDisconnect }) {
+function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
   const [databases, setDatabases] = useState([]);
   const [currentDb, setCurrentDb] = useState("");
   const [tables, setTables] = useState([]);
@@ -67,6 +67,7 @@ function DashboardScreen({ onDisconnect }) {
 
   // Trata a alteração do banco no Select do Header
   const handleDatabaseChange = async (newDb) => {
+    const newConfig = { ...config, database: newDb };
     setLoading(true);
     setError("");
     try {
@@ -79,6 +80,7 @@ function DashboardScreen({ onDisconnect }) {
     } finally {
       setLoading(false);
     }
+    onUpdateTabConfig(newConfig);
   };
 
   const renderTabContent = () => {

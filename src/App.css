@@ -138,3 +138,111 @@ body {
   display: flex;
   align-items: center;
 }
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Barra superior de abas */
+.tabs-bar {
+  display: flex;
+  background-color: #0f172a;
+  border-bottom: 1px solid #1e293b;
+  padding-top: 4px;
+  padding-left: 8px;
+  gap: 2px;
+}
+
+/* Item de aba individual */
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #1e293b;
+  color: #94a3b8;
+  padding: 6px 12px;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid #334155;
+  border-bottom: none;
+  font-size: 12px;
+  cursor: pointer;
+  max-width: 220px;
+  transition: all 0.15s ease;
+}
+
+.tab-item:hover {
+  background-color: #233044;
+  color: #e2e8f0;
+}
+
+.tab-item.active {
+  background-color: #1e1e24; /* Combina com o fundo do seu container/dashboard */
+  color: #3b82f6;
+  border-color: #2d2d3d;
+  font-weight: 500;
+}
+
+.tab-icon {
+  color: #64748b;
+}
+.tab-item.active .tab-icon {
+  color: #3b82f6;
+}
+
+.tab-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Botão de fechar aba */
+.btn-close-tab {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.btn-close-tab:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+/* Botão de nova aba (+) */
+.tab-item-plus {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  margin-bottom: 2px;
+  border-radius: 4px;
+}
+
+.tab-item-plus:hover,
+.tab-item-plus.active {
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  background-color: #1e1e24;
+}
+
+.dashboard-view {
+  padding: 24px;
+  color: #f8fafc;
+}

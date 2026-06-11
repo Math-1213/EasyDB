@@ -1,118 +1,106 @@
 /* ==========================================================================
-   TELA DE LOGIN / CONEXÃO
+   TELA DE LOGIN / CONEXÃO (MODERNA AZUL)
    ========================================================================== */
 .login-container {
   max-width: 400px;
-  margin: 80px auto;
-  padding: 24px;
-  background: #252526;
-  border: 1px solid #3c3c3c;
-  border-radius: 6px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  margin: 60px auto;
+  padding: 32px;
+  background: #1e1e24;
+  border: 1px solid #2d2d3d;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 .login-container h1 {
   margin-bottom: 6px;
-  color: #4caf50;
+  color: #3b82f6; /* Azul Moderno */
   text-align: center;
-  font-size: 24px;
+  font-size: 26px;
+  letter-spacing: -0.5px;
 }
 
 .login-container p {
   text-align: center;
-  color: #858585;
+  color: #94a3b8;
   font-size: 13px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .form-group {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .form-group label {
   display: block;
   margin-bottom: 6px;
   font-size: 12px;
-  color: #cccccc;
-  font-weight: 600;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
 .form-group input {
   width: 100%;
-  padding: 8px 10px;
-  background: #3c3c3c;
-  border: 1px solid #555;
-  border-radius: 4px;
-  color: #fff;
+  padding: 10px 12px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #f8fafc;
   font-size: 13px;
+  transition: all 0.2s ease;
 }
 
 .form-group input:focus {
-  border-color: #4caf50;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
   outline: none;
 }
 
-.login-container button {
-  width: 100%;
-  padding: 10px;
-  background: #4caf50;
-  border: none;
-  border-radius: 4px;
-  color: white;
-  font-weight: bold;
-  font-size: 14px;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: background 0.2s;
-}
-
-.login-container button:hover {
-  background: #43a047;
-}
-
 .status-message {
-  margin-top: 15px;
-  padding: 10px;
-  background: #2d2d2d;
-  border-left: 4px solid #4caf50;
+  margin-top: 20px;
+  padding: 12px;
+  background: #0f172a;
+  border-left: 3px solid #3b82f6;
+  border-radius: 0 6px 6px 0;
   font-size: 13px;
-  color: #ccc;
+  color: #cbd5e1;
   word-break: break-all;
 }
 
 .form-group-row {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .form-group-row .form-group {
   flex: 1;
 }
 
-/* CONTAINER DE PRESETS */
+/* ==========================================================================
+   CONTAINER DE PRESETS
+   ========================================================================== */
 .presets-section {
   width: 100%;
-  margin-bottom: 15px;
-  background-color: #1e1e1e;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #3c3c3c;
+  margin-bottom: 20px;
+  background-color: #0f172a;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
 }
 
 .preset-label {
   font-size: 11px;
-  color: #858585;
+  color: #64748b;
   text-transform: uppercase;
-  font-weight: bold;
+  font-weight: 600;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
 }
 
 .presets-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 6px;
+  gap: 6px;
 }
 
 .preset-badge {
@@ -120,21 +108,27 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  background-color: #2d2d2d;
-  color: #e0e0e0;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 13px;
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 12px;
   cursor: pointer;
-  border: 1px solid #3c3c3c;
+  border: 1px solid #334155;
   transition: all 0.2s ease;
   height: 28px;
   box-sizing: border-box;
 }
 
-.preset-badge:hover {
-  background-color: #383838;
-  border-color: #4caf50;
+.preset-badge:hover:not(.confirming) {
+  background-color: #334155;
+  border-color: #3b82f6;
+}
+
+.preset-badge.confirming {
+  background-color: #451a1a;
+  border-color: #ef4444;
+  cursor: default;
 }
 
 .btn-delete-preset {
@@ -143,16 +137,46 @@
   justify-content: center;
   background: none;
   border: none;
-  color: #888;
+  color: #94a3b8;
   padding: 0;
-  margin: 0;
   cursor: pointer;
   height: 100%;
   transition: color 0.2s ease;
 }
 
 .btn-delete-preset:hover {
-  color: #ff4d4d;
+  color: #ef4444;
+}
+
+.badge-confirm-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-badge-confirm,
+.btn-badge-cancel {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.btn-badge-confirm {
+  color: #ef4444;
+}
+.btn-badge-confirm:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+.btn-badge-cancel {
+  color: #94a3b8;
+}
+.btn-badge-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .preset-badge span {
@@ -162,65 +186,116 @@
   line-height: 1;
 }
 
-/* SALVAR PRESET FORM */
+/* ==========================================================================
+   SALVAR PRESET FORM & BOTÕES
+   ========================================================================== */
 .save-preset-container {
   display: flex;
   gap: 8px;
-  margin: 15px 0 10px 0;
-  border-top: 1px solid #3c3c3c;
-  padding-top: 12px;
+  margin: 20px 0 12px 0;
+  border-top: 1px solid #2d2d3d;
+  padding-top: 16px;
 }
 
 .preset-name-input {
   flex: 1;
-  background-color: #1e1e1e;
-  border: 1px solid #3c3c3c;
-  border-radius: 4px;
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
   color: white;
-  padding: 6px 10px;
+  padding: 0 10px;
   font-size: 12px;
   outline: none;
+  height: 30px;
+  transition: border-color 0.2s;
 }
 
 .preset-name-input:focus {
-  border-color: #4caf50;
+  border-color: #3b82f6;
 }
 
 .btn-save-preset {
-  background-color: #2d2d2d;
-  color: #ccc;
-  border: 1px solid #444;
+  background-color: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
   padding: 0 12px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  height: 30px;
+  box-sizing: border-box;
+  transition: all 0.2s;
 }
 
 .btn-save-preset:hover:not(:disabled) {
-  background-color: #383838;
+  background-color: #334155;
   color: #fff;
+  border-color: #475569;
 }
 
 .btn-save-preset:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
+/* Botão Conectar Principal */
 .btn-connect-main {
   width: 100%;
-  background-color: #4caf50;
+  background-color: #3b82f6;
   color: white;
   border: none;
-  padding: 10px;
-  border-radius: 4px;
-  font-weight: bold;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  margin-top: 5px;
+  margin-top: 8px;
+  transition:
+    background 0.2s,
+    transform 0.1s;
 }
 
 .btn-connect-main:hover {
-  background-color: #43a047;
+  background-color: #2563eb;
+}
+
+.btn-connect-main:active {
+  transform: scale(0.98);
+}
+
+.drag-handle {
+  color: #64748b;
+  cursor: grab;
+  margin-right: -2px;
+  user-select: none;
+}
+
+.preset-badge:active {
+  cursor: grabbing;
+  opacity: 0.6;
+}
+
+.preset-badge.dragging {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.preset-badge * {
+  pointer-events: none; /* Ignora interferência dos filhos no Drag and Drop */
+}
+
+/* Reativa o ponteiro apenas para os botões quando NÃO estiver arrastando */
+.preset-badge:not(.dragging) button {
+  pointer-events: auto;
+}
+
+/* Efeito visual enquanto arrasta */
+.preset-badge.dragging {
+  opacity: 0.4;
+  border: 1px dashed #3b82f6 !important;
+  background-color: #0f172a !important;
 }
