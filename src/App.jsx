@@ -69,6 +69,7 @@ function App() {
                 setActiveTabId(tab.id);
                 setShowConnect(false);
               }}
+              title={tab.title}
             >
               <Database size={14} className="tab-icon" />
               <span className="tab-title">{tab.title}</span>

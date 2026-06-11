@@ -242,7 +242,32 @@ body {
   background-color: #1e1e24;
 }
 
+/* Zera qualquer espaçamento que o Tauri ou o index.html possam ter criado */
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Garante que o contêiner de visualização da dashboard não tenha padding */
 .dashboard-view {
-  padding: 24px;
-  color: #f8fafc;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100%;
+  height: 100%;
+}
+
+/* Certifique-se de que a estrutura principal ocupe o espaço total limpo */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }

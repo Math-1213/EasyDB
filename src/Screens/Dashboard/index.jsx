@@ -1,6 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Database, LogOut } from "lucide-react"; // Opcional se usar ícones
+import {
+  Database,
+  LogOut,
+  TableProperties,
+  Layers,
+  Code,
+  PlayCircle,
+  Network,
+} from "lucide-react";
 import "./styles.css";
 import "../../App.css";
 
@@ -20,21 +28,25 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("dados");
 
-  // Carrega as databases disponíveis e depois lista as tabelas do banco padrão inicial
+  // Estado e Referência para a largura da Sidebar
+  const [sidebarWidth, setSidebarWidth] = useState(240);
+  const isResizingRef = useRef(false);
+
   useEffect(() => {
     async function initDashboard() {
       try {
         const dbList = await invoke("get_databases");
         setDatabases(dbList);
-
-        // Carrega tabelas do banco inicial ativo
+        if (config?.database) {
+          setCurrentDb(config.database);
+        }
         await loadTablesList();
       } catch (err) {
         setError(`Erro ao iniciar painel: ${err}`);
       }
     }
     initDashboard();
-  }, []);
+  }, [config?.database]);
 
   const loadTablesList = async () => {
     try {
@@ -65,7 +77,6 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
     }
   };
 
-  // Trata a alteração do banco no Select do Header
   const handleDatabaseChange = async (newDb) => {
     const newConfig = { ...config, database: newDb };
     setLoading(true);
@@ -73,7 +84,6 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
     try {
       await invoke("switch_database", { newDb });
       setCurrentDb(newDb);
-      // Recarrega a lista de tabelas do novo banco injetado
       await loadTablesList();
     } catch (err) {
       setError(`Falha ao alternar banco: ${err}`);
@@ -81,6 +91,30 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
       setLoading(false);
     }
     onUpdateTabConfig(newConfig);
+  };
+
+  // Funções para controlar o redimensionamento da barra lateral
+  const startResizing = (e) => {
+    e.preventDefault();
+    isResizingRef.current = true;
+    document.addEventListener("mousemove", resizeSidebar);
+    document.addEventListener("mouseup", stopResizing);
+    document.body.style.cursor = "col-resize"; // Força o cursor no app
+  };
+
+  const resizeSidebar = (e) => {
+    if (!isResizingRef.current) return;
+    // Define limites mínimo (180px) e máximo (500px) para a barra
+    if (e.clientX >= 180 && e.clientX <= 500) {
+      setSidebarWidth(e.clientX);
+    }
+  };
+
+  const stopResizing = () => {
+    isResizingRef.current = false;
+    document.removeEventListener("mousemove", resizeSidebar);
+    document.removeEventListener("mouseup", stopResizing);
+    document.body.style.cursor = "default";
   };
 
   const renderTabContent = () => {
@@ -105,12 +139,15 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
 
   return (
     <div className="dashboard-layout">
-      {/* Barra Lateral */}
-      <aside className="sidebar">
+      {/* Barra Lateral com largura inline dinâmica */}
+      <aside
+        className="sidebar"
+        style={{ width: `${sidebarWidth}px`, minWidth: `${sidebarWidth}px` }}
+      >
         <div className="sidebar-header">
           <h3>EasyPost</h3>
           <button onClick={onDisconnect} className="btn-disconnect">
-            Sair
+            <LogOut size={12} /> Sair
           </button>
         </div>
         <div className="sidebar-title">TABELAS ({tables.length})</div>
@@ -121,30 +158,36 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
               className={selectedTable === table ? "active" : ""}
               onClick={() => handleSelectTable(table)}
             >
-              📊 {table}
+              <TableProperties size={14} className="li-icon" />{" "}
+              <span>{table}</span>
             </li>
           ))}
         </ul>
       </aside>
+
+      {/* Divisória clicável e arrastável */}
+      <div className="sidebar-resizer" onMouseDown={startResizing} />
 
       {/* Conteúdo Principal */}
       <main className="main-content">
         {error && <div className="error-banner">{error}</div>}
 
         <header className="tabs-navigation-bar">
-          {/* Seletor Dinâmico de Database no Header */}
           <div className="db-switcher-container">
-            <select
-              value={currentDb}
-              onChange={(e) => handleDatabaseChange(e.target.value)}
-              className="db-select-dropdown"
-            >
-              {databases.map((db) => (
-                <option key={db} value={db}>
-                  🗄️ {db}
-                </option>
-              ))}
-            </select>
+            <div className="select-wrapper">
+              <Database size={14} className="select-icon" />
+              <select
+                value={currentDb}
+                onChange={(e) => handleDatabaseChange(e.target.value)}
+                className="db-select-dropdown"
+              >
+                {databases.map((db) => (
+                  <option key={db} value={db}>
+                    {db}
+                  </option>
+                ))}
+              </select>
+            </div>
             <span className="db-table-separator">/</span>
             <div className="current-table-indicator">
               {selectedTable || "Sem seleção"}
@@ -153,40 +196,34 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
 
           <nav className="tabs-container">
             <button
-              className={activeTab === "dados" ? "tab-btn active" : "tab-btn"}
+              className={`tab-btn ${activeTab === "dados" ? "active" : ""}`}
               onClick={() => setActiveTab("dados")}
             >
-              Dados
+              <Layers size={14} /> Dados
             </button>
             <button
-              className={
-                activeTab === "estrutura" ? "tab-btn active" : "tab-btn"
-              }
+              className={`tab-btn ${activeTab === "estrutura" ? "active" : ""}`}
               onClick={() => setActiveTab("estrutura")}
             >
-              Estrutura
+              <TableProperties size={14} /> Estrutura
             </button>
             <button
-              className={
-                activeTab === "query_texto" ? "tab-btn active" : "tab-btn"
-              }
+              className={`tab-btn ${activeTab === "query_texto" ? "active" : ""}`}
               onClick={() => setActiveTab("query_texto")}
             >
-              Query SQL
+              <Code size={14} /> Query SQL
             </button>
             <button
-              className={
-                activeTab === "query_dinamica" ? "tab-btn active" : "tab-btn"
-              }
+              className={`tab-btn ${activeTab === "query_dinamica" ? "active" : ""}`}
               onClick={() => setActiveTab("query_dinamica")}
             >
-              Query Dinâmica
+              <PlayCircle size={14} /> Query Dinâmica
             </button>
             <button
-              className={activeTab === "uml" ? "tab-btn active" : "tab-btn"}
+              className={`tab-btn ${activeTab === "uml" ? "active" : ""}`}
               onClick={() => setActiveTab("uml")}
             >
-              Diagrama UML
+              <Network size={14} /> Diagrama UML
             </button>
           </nav>
         </header>
