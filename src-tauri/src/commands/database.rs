@@ -1,4 +1,5 @@
 use crate::state::{get_tls_connector, AppState};
+
 use serde::Serialize;
 use tauri::State;
 
@@ -459,9 +460,36 @@ pub async fn execute_raw_query(
                             .try_get::<_, Option<String>>(i)
                             .unwrap_or(None)
                             .unwrap_or_else(|| "NULL".to_string()),
+                        "date" | "timestamp" | "timestamptz" => {
+                            // 1. Tenta timestamp com fuso horário (comum para timestamptz)
+                            if let Ok(Some(dt)) =
+                                row.try_get::<_, Option<chrono::DateTime<chrono::Utc>>>(i)
+                            {
+                                dt.format("%Y-%m-%d %H:%M:%S").to_string()
+                            }
+                            // 2. Tenta timestamp sem fuso horário (comum para timestamp)
+                            else if let Ok(Some(ndt)) =
+                                row.try_get::<_, Option<chrono::NaiveDateTime>>(i)
+                            {
+                                ndt.format("%Y-%m-%d %H:%M:%S").to_string()
+                            }
+                            // 3. Tenta data pura (comum para date)
+                            else if let Ok(Some(d)) =
+                                row.try_get::<_, Option<chrono::NaiveDate>>(i)
+                            {
+                                d.format("%Y-%m-%d").to_string()
+                            }
+                            // 4. Fallback direto
+                            else if let Ok(Some(s)) = row.try_get::<_, Option<String>>(i) {
+                                s
+                            } else {
+                                "NULL".to_string()
+                            }
+                        }
                         _ => match row.try_get::<_, Option<String>>(i) {
                             Ok(Some(v)) => v,
-                            _ => format!("[{}]", column_type),
+                            Ok(None) => "NULL".to_string(),
+                            Err(_) => format!("[{}]", column_type),
                         },
                     };
                     current_row.push(value);
@@ -566,7 +594,7 @@ pub async fn update_table_cell(
     };
 
     // Monta o update de forma segura usando cast para text na cláusula WHERE da PK
-    let query = if value_is_null {
+    let _query = if value_is_null {
         format!(
             "UPDATE {} SET \"{}\" = NULL WHERE \"{}\"::text = '{}'",
             table_name,
