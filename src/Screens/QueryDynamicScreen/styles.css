@@ -1,11 +1,12 @@
 /* ==========================================================================
-   ABA 4: QUERY DINÂMICA (CONSTRUTOR VISUAL)
+    ABA 4: QUERY DINÂMICA (CONSTRUTOR VISUAL) - ADAPTADO AO DASHBOARD
    ========================================================================== */
 .dynamic-screen-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  background-color: #1e1e24;
 }
 
 .dynamic-workspace-grid {
@@ -18,9 +19,9 @@
 
 .builder-controls-panel {
   min-width: 250px;
-  background-color: #252526;
-  border-right: 1px solid #3c3c3c;
-  padding: 15px;
+  background-color: #0f172a; /* Seguindo o padrão da sidebar original */
+  border-right: 1px solid #1e293b;
+  padding: 16px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -29,27 +30,47 @@
 }
 
 .control-card {
-  background-color: #1e1e1e;
-  border: 1px solid #3c3c3c;
+  background-color: #1e293b; /* Mesma cor dos cards/elementos secundários */
+  border: 1px solid #334155;
   border-radius: 6px;
   padding: 12px;
-  width: 100%; /* Garante que respeite o limite do painel */
+  width: 100%;
+}
+
+/* O container da ordenação (que usa a mesma classe dos filtros) */
+.control-card .dynamic-where-row {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+/* O primeiro select (Coluna) expande para ocupar todo o espaço disponível */
+.control-card .dynamic-where-row .filter-select.compact:nth-child(1) {
+  flex: 1;
+  width: auto; /* Remove a largura de 100% fixa para permitir o cálculo do flex */
+}
+
+/* O segundo select (Direção: ASC/DESC) fica fixo no tamanho do conteúdo dele */
+.control-card .dynamic-where-row .filter-select.compact:nth-child(2) {
+  flex: 0 0 auto;
+  width: max-content;
+  min-width: 75px; /* Tamanho seguro para "DESC" não quebrar */
 }
 
 .margin-top-card {
-  margin-top: 15px;
+  margin-top: 16px;
 }
 
 .card-header-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #fff;
+  color: #f1f5f9;
   font-size: 13px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #2d2d2d;
-  padding-bottom: 6px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 8px;
 }
 
 .bulk-selection-actions {
@@ -61,7 +82,7 @@
 .btn-link-action {
   background: none;
   border: none;
-  color: #4caf50;
+  color: #3b82f6; /* Azul padrão */
   font-size: 11px;
   cursor: pointer;
   padding: 0;
@@ -69,6 +90,7 @@
 
 .btn-link-action:hover {
   text-decoration: underline;
+  color: #60a5fa;
 }
 
 .columns-checkbox-list {
@@ -85,7 +107,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #ccc;
+  color: #94a3b8;
   cursor: pointer;
 }
 
@@ -95,11 +117,11 @@
 }
 
 .btn-add-where {
-  background-color: #2d2d2d;
-  color: #ccc;
-  border: 1px solid #444;
+  background-color: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
   width: 100%;
-  padding: 5px;
+  padding: 6px;
   border-radius: 4px;
   font-size: 11px;
   cursor: pointer;
@@ -107,12 +129,14 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  transition: all 0.15s ease;
 }
 
 .btn-add-where:hover {
-  background-color: #383838;
-  color: #fff;
+  background-color: #334155;
+  color: #f1f5f9;
+  border-color: #475569;
 }
 
 .where-clauses-wrapper {
@@ -121,33 +145,33 @@
   gap: 8px;
 }
 
-/* LINHA DO FILTRO CORRIGIDA */
+/* LINHA DO FILTRO ADAPTADA */
 .dynamic-where-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: #252526;
+  background-color: #0f172a;
   padding: 6px;
   border-radius: 4px;
-  border: 1px solid #3c3c3c;
+  border: 1px solid #334155;
   width: 100%;
 }
 
 /* DISTRIBUIÇÃO DINÂMICA DE ESPAÇO */
 .dynamic-where-row .filter-select.compact:nth-child(1) {
-  flex: 2; /* Campo 'id' ganha espaço proporcional */
+  flex: 2;
   min-width: 50px;
 }
 
 .dynamic-where-row .filter-select.compact.operator {
-  flex: 3; /* Operador longo ganha mais espaço para não quebrar texto */
+  flex: 3;
   min-width: 100px;
 }
 
 .dynamic-where-row .filter-val-input.compact {
-  flex: 2; /* Input de valor se ajusta ao resto */
+  flex: 2;
   min-width: 60px;
-  width: 100%; /* Sobrescreve largura fixa antiga */
+  width: 100%;
 }
 
 .filter-select.compact,
@@ -156,32 +180,33 @@
   width: 100%;
   font-size: 11px;
   height: 26px;
-  padding: 2px 4px;
-  background-color: #1e1e1e;
-  color: white;
-  border: 1px solid #555;
+  padding: 2px 6px;
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
   border-radius: 4px;
   outline: none;
 }
 
 .filter-select.compact:focus,
 .filter-val-input.compact:focus {
-  border-color: #4caf50;
+  border-color: #3b82f6;
 }
 
 .btn-delete-where {
   background: transparent;
   border: none;
-  color: #858585;
+  color: #64748b;
   cursor: pointer;
   padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: color 0.1s ease;
 }
 
 .btn-delete-where:hover {
-  color: #e57373;
+  color: #ef4444; /* Vermelho do btn-disconnect */
 }
 
 .builder-preview-panel {
@@ -190,29 +215,22 @@
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  background-color: #1e1e24;
 }
 
 .sql-live-preview-box {
-  background-color: #151515;
-  padding: 12px 15px;
-  border-bottom: 1px solid #3c3c3c;
+  background-color: #0f172a;
+  padding: 12px 16px;
+  border-bottom: 1px solid #1e293b;
 }
 
 .preview-header {
   font-size: 11px;
-  color: #757575;
-  font-weight: bold;
+  color: #64748b;
+  font-weight: 600;
   text-transform: uppercase;
-  margin-bottom: 4px;
-}
-
-.sql-live-preview-box code {
-  font-family: Consolas, monospace;
-  color: #b5cea8;
-  font-size: 12px;
-  word-break: break-all;
-  display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
 }
 
 .preview-action-row {
@@ -221,20 +239,21 @@
 }
 
 .btn-execute-dynamic {
-  background-color: #4caf50;
+  background-color: #3b82f6;
   color: white;
   border: none;
-  padding: 5px 12px;
+  padding: 6px 14px;
   border-radius: 4px;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
+  transition: background-color 0.15s ease;
 }
 
 .btn-execute-dynamic:hover {
-  background-color: #43a047;
+  background-color: #2563eb;
 }
 
 .dynamic-table-results {
@@ -248,24 +267,24 @@
 .sql-dynamic-textarea {
   width: 100%;
   height: 70px;
-  background-color: #151515;
-  border: 1px solid #3c3c3c;
+  background-color: #1e293b;
+  border: 1px solid #334155;
   border-radius: 4px;
-  color: #b5cea8;
-  font-family: Consolas, monospace;
+  color: #e2e8f0;
+  font-family: Consolas, Monaco, monospace;
   font-size: 12px;
   padding: 8px 10px;
   resize: vertical;
   outline: none;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .sql-dynamic-textarea:focus {
-  border-color: #4caf50;
+  border-color: #3b82f6;
 }
 
 .active-joins-card {
-  border-left: 3px solid #4caf50;
+  border-left: 3px solid #3b82f6; /* Troca do verde para o azul */
 }
 
 .joined-tables-tags {
@@ -276,9 +295,9 @@
 }
 
 .join-tag {
-  background-color: #2d2d2d;
-  color: #4caf50;
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
   font-family: monospace;
   font-size: 11px;
   padding: 2px 6px;
@@ -286,19 +305,19 @@
 }
 
 .prefixed-col-name small {
-  color: #757575;
+  color: #64748b;
   margin-right: 2px;
 }
 
 .prefixed-col-name strong {
-  color: #ddd;
+  color: #e2e8f0;
 }
 
 .table-responsive-wrapper {
   flex: 1;
   overflow: auto;
-  border: 1px solid #3c3c3c;
-  background-color: #1e1e1e;
+  border: 1px solid #1e293b;
+  background-color: #1e1e24;
   position: relative;
 }
 
@@ -310,33 +329,39 @@
 .data-table thead th {
   position: sticky;
   top: 0;
-  background: #2d2d2d;
+  background: #0f172a;
+  color: #f1f5f9;
   z-index: 10;
   padding: 10px;
-  border: 1px solid #444;
-  cursor: col-resize; /* Indica que é redimensionável */
+  border: 1px solid #1e293b;
+  cursor: col-resize;
   user-select: none;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .data-table td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 8px;
-  border: 1px solid #333;
+  padding: 8px 12px;
+  border: 1px solid #1e293b;
+  color: #94a3b8;
+  font-size: 13px;
 }
 
+/* MODIFICADO: Segue o estilo do elemento '.sidebar-resizer' enviado */
 .panel-resizer {
-  width: 6px;
+  width: 4px;
   cursor: col-resize;
-  background-color: #3c3c3c;
-  z-index: 100;
-  border-left: 1px solid #222;
-  border-right: 1px solid #222;
-  /* Melhora o feedback visual */
-  transition: background-color 0.1s;
+  background-color: transparent;
+  position: relative;
+  z-index: 10;
+  border-left: 1px solid #1e293b; /* Garante a linha divisória discreta */
+  transition: background-color 0.15s ease;
 }
 
-.panel-resizer:hover {
-  background-color: #4caf50;
+.panel-resizer:hover,
+.panel-resizer:active {
+  background-color: #3b82f6;
 }
