@@ -59,17 +59,85 @@ pub async fn get_tables(state: State<'_, AppState>) -> Result<Vec<String>, Strin
     Ok(rows.iter().map(|row| row.get::<_, String>(0)).collect())
 }
 
+#[derive(serde::Deserialize)]
+pub struct BackendFilter {
+    column: String,
+    operator: String,
+    value: String,
+    value2: String,
+}
+
+#[derive(serde::Serialize)]
+pub struct PaginatedTableData {
+    columns: Vec<String>,
+    rows: Vec<Vec<String>>,
+    total_count: i64,
+}
+
 #[tauri::command]
 pub async fn get_table_data(
     table_name: String,
     state: State<'_, AppState>,
 ) -> Result<TableData, String> {
+    // Reutiliza a lógica paginada passando filtros vazios, sem ordenação e limite de 100
+    let paginated_result = get_table_data_paginated(
+        table_name,
+        100,    // limit padrão antigo
+        0,      // offset zero
+        None,   // sort_column
+        None,   // sort_direction
+        vec![], // filtros vazios
+        state,
+    )
+    .await?;
+
+    // Converte o retorno para a estrutura TableData que a dashboard espera
+    Ok(TableData {
+        columns: paginated_result.columns,
+        rows: paginated_result.rows,
+    })
+}
+
+pub async fn get_primary_key_column(
+    client: &tokio_postgres::Client,
+    table_name: &str,
+) -> Result<Option<String>, String> {
+    let query = "
+        SELECT kcu.column_name 
+        FROM information_schema.table_constraints tc 
+        JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name
+        WHERE tc.table_schema = 'public' AND tc.constraint_type = 'PRIMARY KEY' AND tc.table_name = $1
+        LIMIT 1;
+    ";
+    let rows = client
+        .query(query, &[&table_name])
+        .await
+        .map_err(|e| e.to_string())?;
+    if rows.is_empty() {
+        Ok(None)
+    } else {
+        let pk: String = rows[0].get(0);
+        Ok(Some(pk))
+    }
+}
+
+#[tauri::command]
+pub async fn get_table_data_paginated(
+    table_name: String,
+    limit: i64,
+    offset: i64,
+    sort_column: Option<String>,
+    sort_direction: Option<String>,
+    filters: Vec<BackendFilter>,
+    state: State<'_, AppState>,
+) -> Result<PaginatedTableData, String> {
     let conn_str = state
         .connection_string
         .lock()
         .unwrap()
         .clone()
         .ok_or("Não há nenhuma conexão ativa")?;
+
     let connector = get_tls_connector()?;
     let (client, connection) = tokio_postgres::connect(&conn_str, connector)
         .await
@@ -83,21 +151,109 @@ pub async fn get_table_data(
         return Err("Nome de tabela inválido".to_string());
     }
 
-    let query = format!("SELECT * FROM {} LIMIT 100", table_name);
-    let rows = client.query(&query, &[]).await.map_err(|e| e.to_string())?;
+    // 1. Construção dinâmica dos filtros (Cláusula WHERE)
+    let mut where_clauses = Vec::new();
+    for f in &filters {
+        if !f.column.chars().all(|c| c.is_alphanumeric() || c == '_') {
+            return Err("Nome de coluna inválido nos filtros".to_string());
+        }
 
-    if rows.is_empty() {
-        return Ok(TableData {
-            columns: vec![],
-            rows: vec![],
-        });
+        let escaped_val = f.value.replace("'", "''");
+        let escaped_val2 = f.value2.replace("'", "''");
+
+        let clause = match f.operator.as_str() {
+            "=" => format!("{}::text = '{}'", f.column, escaped_val),
+            ">" => format!("{}::text > '{}'", f.column, escaped_val),
+            ">=" => format!("{}::text >= '{}'", f.column, escaped_val),
+            "<" => format!("{}::text < '{}'", f.column, escaped_val),
+            "<=" => format!("{}::text <= '{}'", f.column, escaped_val),
+            "contains" => format!("{}::text ILIKE '%{}%'", f.column, escaped_val),
+            "starts_with" => format!("{}::text ILIKE '{}%'", f.column, escaped_val),
+            "between" => format!(
+                "{}::text BETWEEN '{}' AND '{}'",
+                f.column, escaped_val, escaped_val2
+            ),
+            _ => "1=1".to_string(),
+        };
+        where_clauses.push(clause);
     }
 
-    let columns: Vec<String> = rows[0]
+    let where_string = if where_clauses.is_empty() {
+        "WHERE 1=1".to_string()
+    } else {
+        format!("WHERE {}", where_clauses.join(" AND "))
+    };
+
+    // 2. Busca o total real de linhas afetadas por essa pesquisa específica
+    let count_query = format!("SELECT COUNT(*) FROM {} {}", table_name, where_string);
+    let count_row = client
+        .query(&count_query, &[])
+        .await
+        .map_err(|e| e.to_string())?;
+    let total_count: i64 = count_row.get(0).map(|r| r.get(0)).unwrap_or(0);
+
+    // 3. Montagem das colunas convertendo Timestamps em strings formatadas via SQL
+    let meta_query = format!("SELECT * FROM {} LIMIT 0", table_name);
+    let meta_statement = client
+        .prepare(&meta_query)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    // Extrai as colunas direto do Statement preparado (funciona mesmo com LIMIT 0)
+    let columns: Vec<String> = meta_statement
         .columns()
         .iter()
         .map(|col| col.name().to_string())
         .collect();
+
+    if columns.is_empty() {
+        return Ok(PaginatedTableData {
+            columns: vec![],
+            rows: vec![],
+            total_count: 0,
+        });
+    }
+
+    let mut select_items = Vec::new();
+    for col_info in meta_statement.columns() {
+        let col = col_info.name();
+        let type_name = col_info.type_().name();
+        if type_name == "timestamp" || type_name == "timestamptz" {
+            // Converte no formato ISO 8601 padrão diretamente no banco
+            select_items.push(format!(
+                "to_char(\"{}\", 'YYYY-MM-DD HH24:MI:SS') AS \"{}\"",
+                col, col
+            ));
+        } else {
+            select_items.push(format!("\"{}\"", col));
+        }
+    }
+    let select_string = select_items.join(", ");
+
+    // 4. Construção da cláusula ORDER BY
+    let mut order_string = String::new();
+    if let Some(col) = sort_column {
+        if col.chars().all(|c| c.is_alphanumeric() || c == '_') {
+            let dir = match sort_direction.as_deref() {
+                Some("desc") => "DESC",
+                _ => "ASC",
+            };
+            order_string = format!("ORDER BY \"{}\" {}", col, dir);
+        }
+    } else {
+        // Se nenhuma coluna foi enviada, tenta buscar a PK da tabela para ordenar
+        if let Ok(Some(pk)) = get_primary_key_column(&client, &table_name).await {
+            order_string = format!("ORDER BY \"{}\" ASC", pk);
+        }
+    }
+
+    // 5. Execução da Query Principal Paginada
+    let query = format!(
+        "SELECT {} FROM {} {} {} LIMIT {} OFFSET {}",
+        select_string, table_name, where_string, order_string, limit, offset
+    );
+    let rows = client.query(&query, &[]).await.map_err(|e| e.to_string())?;
+
     let mut grid_rows = Vec::new();
 
     for row in rows {
@@ -134,18 +290,20 @@ pub async fn get_table_data(
                     .try_get::<_, Option<String>>(i)
                     .unwrap_or(None)
                     .unwrap_or_else(|| "NULL".to_string()),
-                _ => row
-                    .try_get::<_, String>(i)
-                    .unwrap_or_else(|_| format!("[{}]", column_type)),
+                _ => match row.try_get::<_, Option<String>>(i) {
+                    Ok(Some(v)) => v,
+                    _ => format!("[{}]", column_type),
+                },
             };
             current_row.push(value);
         }
         grid_rows.push(current_row);
     }
 
-    Ok(TableData {
+    Ok(PaginatedTableData {
         columns,
         rows: grid_rows,
+        total_count,
     })
 }
 
@@ -269,9 +427,10 @@ pub async fn execute_raw_query(
                             .try_get::<_, Option<String>>(i)
                             .unwrap_or(None)
                             .unwrap_or_else(|| "NULL".to_string()),
-                        _ => row
-                            .try_get::<_, String>(i)
-                            .unwrap_or_else(|_| format!("[{}]", column_type)),
+                        _ => match row.try_get::<_, Option<String>>(i) {
+                            Ok(Some(v)) => v,
+                            _ => format!("[{}]", column_type),
+                        },
                     };
                     current_row.push(value);
                 }
@@ -332,4 +491,96 @@ pub async fn get_db_relationships(state: State<'_, AppState>) -> Result<Vec<Rela
             target_column: row.get(3),
         })
         .collect())
+}
+
+// Função auxiliar para descobrir o nome da coluna Primary Key de uma tabela
+#[tauri::command]
+pub async fn update_table_cell(
+    table_name: String,
+    column_name: String,
+    new_value: String,
+    pk_column: String,
+    pk_value: String,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let conn_str = state
+        .connection_string
+        .lock()
+        .unwrap()
+        .clone()
+        .ok_or("Não há nenhuma conexão ativa")?;
+    let connector = get_tls_connector()?;
+    let (client, connection) = tokio_postgres::connect(&conn_str, connector)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    tokio::spawn(async move {
+        let _ = connection.await;
+    });
+
+    // Sanitização de identificadores
+    if !table_name.chars().all(|c| c.is_alphanumeric() || c == '_')
+        || !column_name.chars().all(|c| c.is_alphanumeric() || c == '_')
+        || !pk_column.chars().all(|c| c.is_alphanumeric() || c == '_')
+    {
+        return Err("Identificadores inválidos".to_string());
+    }
+
+    // Tratamento para valores nulos ou strings tratadas como texto
+    let (update_value, value_is_null) = if new_value == "NULL" || new_value.is_empty() {
+        ("NULL".to_string(), true)
+    } else {
+        (format!("'{}'", new_value.replace("'", "''")), false)
+    };
+
+    // Monta o update de forma segura usando cast para text na cláusula WHERE da PK
+    let query = if value_is_null {
+        format!(
+            "UPDATE {} SET \"{}\" = NULL WHERE \"{}\"::text = '{}'",
+            table_name,
+            column_name,
+            pk_column,
+            pk_value.replace("'", "''")
+        )
+    } else {
+        format!(
+            "UPDATE {} SET \"{}\" = {}::target_type WHERE \"{}\"::text = '{}'",
+            // Usamos um truque do Postgres para tentar converter o texto de entrada para o tipo original da coluna
+            table_name,
+            column_name,
+            update_value,
+            pk_column,
+            pk_value.replace("'", "''")
+        )
+        .replace("::target_type", "") // Remove o placeholder se preferir tipagem fraca do text
+    };
+
+    // Ajuste fino para o set aceitar a string convertida
+    let query_final = format!(
+        "UPDATE {} SET \"{}\" = '{}' WHERE \"{}\"::text = '{}'",
+        table_name,
+        column_name,
+        new_value.replace("'", "''"),
+        pk_column,
+        pk_value.replace("'", "''")
+    );
+
+    // Se for NULL
+    let query_final = if new_value == "NULL" {
+        format!(
+            "UPDATE {} SET \"{}\" = NULL WHERE \"{}\"::text = '{}'",
+            table_name,
+            column_name,
+            pk_column,
+            pk_value.replace("'", "''")
+        )
+    } else {
+        query_final
+    };
+
+    client
+        .execute(&query_final, &[])
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }

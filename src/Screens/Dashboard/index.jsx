@@ -123,7 +123,7 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
     }
     switch (activeTab) {
       case "dados":
-        return <TableDataScreen tableData={tableData} />;
+        return <TableDataScreen tableName={selectedTable} />;
       case "estrutura":
         return <TableStructureScreen selectedTable={selectedTable} />;
       case "query_texto":

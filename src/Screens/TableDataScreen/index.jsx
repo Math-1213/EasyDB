@@ -1,13 +1,15 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core"; // Ou de onde você importa seus comandos nativos
 import {
   Plus,
   Trash2,
   ChevronsUpDown,
   ChevronUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import "./styles.css";
-import "../../App.css";
 
 const OPERATORS = [
   { value: "=", label: "=" },
@@ -17,49 +19,78 @@ const OPERATORS = [
   { value: "<=", label: "≤" },
   { value: "contains", label: "Contém" },
   { value: "starts_with", label: "Começa com" },
-  { value: "between", label: "Entre (X e Y)" },
+  { value: "between", label: "Entre" },
 ];
 
-export default function TableDataScreen({ tableData }) {
+export default function TableDataScreen({ tableName }) {
+  // Estados de Configuração da Tabela Assíncrona
+  const [columns, setColumns] = useState([]);
+  const [rows, setRows] = useState([]);
+  const [totalCount, setTotalCount] = useState(0); // Total de linhas reais no Banco de Dados inteiro
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Estados de Consulta
   const [filters, setFilters] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(100);
 
-  // Estados para gerenciar a edição em linha da célula
+  // Interface de tamanho e edição de células
+  const [colWidths, setColWidths] = useState({});
   const [editingCell, setEditingCell] = useState({
     rowIndex: null,
     colIndex: null,
   });
   const [editValue, setEditValue] = useState("");
-  const [localRows, setLocalRows] = useState(null);
 
-  // Inicializa ou sincroniza os dados locais de linhas quando tableData mudar
-  const currentRows = useMemo(() => {
-    if (localRows !== null) return localRows;
-    return tableData?.rows || [];
-  }, [tableData, localRows]);
+  // Dispara a busca no banco sempre que qualquer parâmetro mudar
+  useEffect(() => {
+    fetchDataFromBackend();
+  }, [tableName, filters, sortConfig, currentPage, pageSize]);
 
-  const addFilter = () => {
-    if (!tableData.columns.length) return;
-    setFilters([
-      ...filters,
-      {
-        id: Date.now(),
-        column: tableData.columns[0],
-        operator: "=",
-        value: "",
-        value2: "",
-      },
-    ]);
+  const fetchDataFromBackend = async () => {
+    try {
+      // Exemplo de payload enviado ao Rust/Tauri para montar o SQL correto dinamicamente
+      console.log("Buscando dados da tabela: ", {
+        tableName,
+        limit: pageSize,
+        offset: (currentPage - 1) * pageSize,
+        sortConfig,
+        filters,
+      });
+      const response = await invoke("get_table_data_paginated", {
+        tableName,
+        limit: pageSize,
+        offset: (currentPage - 1) * pageSize,
+        sortColumn: sortConfig.key,
+        sortDirection: sortConfig.direction,
+        filters: filters.map((f) => ({
+          column: f.column,
+          operator: f.operator,
+          value: f.value,
+          value2: f.value2,
+        })),
+      });
+
+      setColumns(response.columns || []);
+      setRows(response.rows || []);
+      setTotalCount(response.total_count || 0); // O backend deve rodar um: SELECT COUNT(*) FROM... com os mesmos filtros
+    } catch (err) {
+      console.error("Erro ao buscar dados do backend:", err);
+    }
   };
 
-  const removeFilter = (id) => {
-    setFilters(filters.filter((f) => f.id !== id));
-  };
-
-  const updateFilter = (id, field, value) => {
-    setFilters(
-      filters.map((f) => (f.id === id ? { ...f, [field]: value } : f)),
-    );
+  const formatCellValue = (value) => {
+    if (value === null || value === undefined) return "";
+    if (value instanceof Date) return value.toLocaleString();
+    if (typeof value === "object") {
+      if (value.secs_since_epoch !== undefined) {
+        return new Date(value.secs_since_epoch * 1000).toLocaleString();
+      }
+      return JSON.stringify(value);
+    }
+    return String(value);
   };
 
   const handleSort = (columnName) => {
@@ -74,108 +105,142 @@ export default function TableDataScreen({ tableData }) {
       direction = "asc";
     }
     setSortConfig({ key: columnName, direction });
+    setCurrentPage(1); // Reseta para a primeira página ao reordenar
   };
 
-  // Ativa o modo de edição na célula ao dar duplo clique
+  const handleMouseDown = (e, colName) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = colWidths[colName] || 180;
+
+    const handleMouseMove = (moveEvent) => {
+      const newWidth = Math.max(80, startWidth + (moveEvent.clientX - startX));
+      setColWidths((prev) => ({ ...prev, [colName]: newWidth }));
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const addFilter = () => {
+    if (!columns.length) return;
+    setFilters([
+      ...filters,
+      {
+        id: Date.now(),
+        column: columns[0],
+        operator: "=",
+        value: "",
+        value2: "",
+      },
+    ]);
+  };
+
+  const removeFilter = (id) => {
+    setFilters(filters.filter((f) => f.id !== id));
+    setCurrentPage(1);
+  };
+
+  const updateFilter = (id, field, value) => {
+    setFilters(
+      filters.map((f) => (f.id === id ? { ...f, [field]: value } : f)),
+    );
+    setCurrentPage(1);
+  };
+
   const handleCellDoubleClick = (rowIndex, colIndex, currentValue) => {
     setEditingCell({ rowIndex, colIndex });
-    setEditValue(String(currentValue ?? ""));
+    setEditValue(formatCellValue(currentValue));
   };
 
-  // Salva a alteração da célula
-  const handleSaveUpdate = (rowIndex, colIndex) => {
-    const updatedRows = [...currentRows];
+  const handleSaveUpdate = async (rowIndex, colIndex) => {
+    // Pegamos o valor diretamente do estado controlado 'editValue'
+    const newValue = editValue;
 
-    // Preserva o tipo numérico se o valor original já era um número
-    const originalValue = updatedRows[rowIndex][colIndex];
-    const isNumber =
-      typeof originalValue === "number" && !isNaN(Number(editValue));
-
-    updatedRows[rowIndex][colIndex] = isNumber ? Number(editValue) : editValue;
-
-    setLocalRows(updatedRows);
     setEditingCell({ rowIndex: null, colIndex: null });
+    setLoading(true);
+    setError("");
 
-    // TODO: Adicionar o invoke do Tauri aqui para atualizar o registro diretamente no Banco de Dados
-    // Exemplo: await invoke("update_cell_value", { table: tableData.name, column: tableData.columns[colIndex], value: editValue, ...idRow })
+    try {
+      // 1. Busca a estrutura para identificar qual coluna é a PK
+      const structure = await invoke("get_table_structure", {
+        tableName: tableName, // Correção: de selectedTable para tableName
+      });
+      const pkColumnInfo = structure.find((c) => c.is_primary);
+
+      if (!pkColumnInfo) {
+        throw new Error(
+          "Não foi possível atualizar: esta tabela não possui uma Primary Key definida.",
+        );
+      }
+
+      const pkColumnName = pkColumnInfo.name;
+
+      // 2. Localiza o index do cabeçalho correspondente à PK e à coluna atual
+      const pkColIndex = columns.indexOf(pkColumnName); // Correção: de tableData.columns para columns
+      const columnName = columns[colIndex]; // Correção: de tableData.columns para columns
+
+      // 3. Pega o valor identificador da linha atual
+      const pkValue = rows[rowIndex][pkColIndex]; // Correção: de tableData.rows para rows
+
+      // 4. Dispara o update para o Rust
+      await invoke("update_table_cell", {
+        tableName: tableName, // Correção: de selectedTable para tableName
+        columnName: columnName,
+        newValue: newValue,
+        pkColumn: pkColumnName,
+        pkValue: String(pkValue),
+      });
+
+      // 5. Recarrega os dados atualizados do banco
+      await fetchDataFromBackend();
+    } catch (err) {
+      console.error(err);
+      setError(`Erro ao atualizar registro: ${err.message || err}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const processedRows = useMemo(() => {
-    if (!tableData || !currentRows) return [];
-    let rows = [...currentRows];
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
-    filters.forEach((f) => {
-      const colIndex = tableData.columns.indexOf(f.column);
-      if (colIndex === -1) return;
-
-      rows = rows.filter((row) => {
-        const cellValue = row[colIndex];
-        const cellStr = String(cellValue).toLowerCase();
-        const filterStr = f.value.toLowerCase();
-
-        const cellNum = Number(cellValue);
-        const filterNum = Number(f.value);
-        const filterNum2 = Number(f.value2);
-        const isNumericCompare = !isNaN(cellNum) && !isNaN(filterNum);
-
-        switch (f.operator) {
-          case "=":
-            return isNumericCompare
-              ? cellNum === filterNum
-              : cellStr === filterStr;
-          case ">":
-            return isNumericCompare ? cellNum > filterNum : cellStr > filterStr;
-          case ">=":
-            return isNumericCompare
-              ? cellNum >= filterNum
-              : cellStr >= filterStr;
-          case "<":
-            return isNumericCompare ? cellNum < filterNum : cellStr < filterStr;
-          case "<=":
-            return isNumericCompare
-              ? cellNum <= filterNum
-              : cellStr <= filterStr;
-          case "contains":
-            return cellStr.includes(filterStr);
-          case "starts_with":
-            return cellStr.startsWith(filterStr);
-          case "between":
-            if (!isNaN(cellNum) && !isNaN(filterNum) && !isNaN(filterNum2)) {
-              return cellNum >= filterNum && cellNum <= filterNum2;
-            }
-            return false;
-          default:
-            return true;
-        }
-      });
-    });
-
-    if (sortConfig.key !== null) {
-      const colIndex = tableData.columns.indexOf(sortConfig.key);
-      rows.sort((a, b) => {
-        const valA = a[colIndex];
-        const valB = b[colIndex];
-        const numA = Number(valA);
-        const numB = Number(valB);
-
-        if (!isNaN(numA) && !isNaN(numB)) {
-          return sortConfig.direction === "asc" ? numA - numB : numB - numA;
-        }
-        return sortConfig.direction === "asc"
-          ? String(valA).localeCompare(String(valB))
-          : String(valB).localeCompare(String(valA));
-      });
-    }
-
-    return rows;
-  }, [tableData, currentRows, filters, sortConfig]);
-
-  if (!tableData || tableData.columns.length === 0) {
-    return <div className="empty-state">Tabela vazia ou sem colunas.</div>;
+  if (!columns.length && !rows.length) {
+    return (
+      <div className="empty-state">Carregando ou tabela sem colunas...</div>
+    );
   }
+
+  // Gera o padrão de larguras dinâmicas (ex: "max-content max-content...")
+  const getGridTemplateColumns = () => {
+    if (!columns.length) return "1fr";
+
+    return columns
+      .map((colName, colIndex) => {
+        // Mede o tamanho do texto do cabeçalho
+        let maxLength = colName.length;
+
+        // Percorre todas as linhas verificando o tamanho do texto daquela célula específica
+        rows.forEach((row) => {
+          const cellValue = row[colIndex] ? String(row[colIndex]) : "";
+          if (cellValue.length > maxLength) {
+            maxLength = cellValue.length;
+          }
+        });
+
+        // Define um tamanho dinâmico aproximado em ch (largura do caractere '0') com um respiro de padding
+        return `minmax(${maxLength + 4}ch, max-content)`;
+      })
+      .join(" ");
+  };
 
   return (
     <div className="table-screen-container">
+      {/* Filtros */}
       <div className="filter-builder-zone">
         <div className="filter-builder-header">
           <button onClick={addFilter} className="btn-add-filter">
@@ -183,7 +248,7 @@ export default function TableDataScreen({ tableData }) {
           </button>
           {filters.length > 0 && (
             <span className="results-badge">
-              {processedRows.length} de {tableData.rows.length} linhas filtradas
+              {totalCount} registros encontrados nos filtros
             </span>
           )}
         </div>
@@ -195,7 +260,7 @@ export default function TableDataScreen({ tableData }) {
               onChange={(e) => updateFilter(f.id, "column", e.target.value)}
               className="filter-select"
             >
-              {tableData.columns.map((col) => (
+              {columns.map((col) => (
                 <option key={col} value={col}>
                   {col}
                 </option>
@@ -238,28 +303,53 @@ export default function TableDataScreen({ tableData }) {
             <button
               onClick={() => removeFilter(f.id)}
               className="btn-remove-filter"
-              title="Remover filtro"
             >
-              <Trash2 size={14} className="icon-trash" />
+              <Trash2 size={14} />
             </button>
           </div>
         ))}
       </div>
 
+      {/* Tabela de Dados */}
       <div className="table-responsive-wrapper">
         <table className="data-table">
+          {/* O colgroup define a largura de cada coluna sem quebrar a estrutura da tabela */}
+          <colgroup>
+            {columns.map((colName, colIndex) => {
+              // Mede o tamanho do texto do cabeçalho
+              let maxLength = colName.length;
+
+              // Percorre as linhas para achar o maior texto desta coluna
+              rows.forEach((row) => {
+                const cellValue = row[colIndex] ? String(row[colIndex]) : "";
+                if (cellValue.length > maxLength) {
+                  maxLength = cellValue.length;
+                }
+              });
+
+              // Caso você tenha redimensionado manualmente via mouse, usa o colWidths, senão usa o auto-size calculado
+              const width = colWidths[colName] || `${maxLength + 4}ch`;
+
+              return (
+                <col
+                  key={colName}
+                  style={{
+                    width: typeof width === "number" ? `${width}px` : width,
+                    minWidth: typeof width === "number" ? `${width}px` : width,
+                  }}
+                />
+              );
+            })}
+          </colgroup>
+
           <thead>
             <tr>
-              {tableData.columns.map((col) => {
+              {columns.map((col) => {
                 const isSorted = sortConfig.key === col;
                 return (
-                  <th
-                    key={col}
-                    onClick={() => handleSort(col)}
-                    className="sortable-th"
-                  >
-                    <div className="th-content">
-                      {col}
+                  <th key={col} className="sortable-th">
+                    <div className="th-content" onClick={() => handleSort(col)}>
+                      <span className="th-text">{col}</span>
                       <span
                         className={`sort-icon ${isSorted ? sortConfig.direction : ""}`}
                       >
@@ -274,28 +364,30 @@ export default function TableDataScreen({ tableData }) {
                         )}
                       </span>
                     </div>
+                    <div
+                      className="col-resizer"
+                      onMouseDown={(e) => handleMouseDown(e, col)}
+                    />
                   </th>
                 );
               })}
             </tr>
           </thead>
           <tbody>
-            {processedRows.length === 0 ? (
+            {rows.length === 0 ? (
               <tr>
-                <td
-                  colSpan={tableData.columns.length}
-                  className="no-results-td"
-                >
-                  Nenhum registro corresponde aos filtros definidos.
+                <td colSpan={columns.length} className="no-results-td">
+                  Nenhum registro encontrado.
                 </td>
               </tr>
             ) : (
-              processedRows.map((row, rowIndex) => (
+              rows.map((row, rowIndex) => (
                 <tr key={rowIndex}>
                   {row.map((cell, cellIndex) => {
                     const isEditing =
                       editingCell.rowIndex === rowIndex &&
                       editingCell.colIndex === cellIndex;
+                    const stringifiedValue = formatCellValue(cell);
 
                     return (
                       <td
@@ -303,7 +395,7 @@ export default function TableDataScreen({ tableData }) {
                         onDoubleClick={() =>
                           handleCellDoubleClick(rowIndex, cellIndex, cell)
                         }
-                        style={{ position: "relative" }}
+                        title={stringifiedValue}
                       >
                         {isEditing ? (
                           <input
@@ -324,7 +416,7 @@ export default function TableDataScreen({ tableData }) {
                             autoFocus
                           />
                         ) : (
-                          String(cell ?? "")
+                          stringifiedValue
                         )}
                       </td>
                     );
@@ -334,6 +426,50 @@ export default function TableDataScreen({ tableData }) {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Paginação de Banco de Dados */}
+      <div className="table-pagination-bar">
+        <div className="pagination-info">
+          Exibindo de {Math.min(totalCount, (currentPage - 1) * pageSize + 1)} a{" "}
+          {Math.min(totalCount, currentPage * pageSize)} de {totalCount}{" "}
+          registros totais
+        </div>
+
+        <div className="pagination-controls">
+          <select
+            className="filter-select page-size-select"
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+          >
+            <option value={50}>50 por página</option>
+            <option value={100}>100 por página</option>
+            <option value={500}>500 por página</option>
+          </select>
+
+          <div className="pagination-buttons">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="btn-page-nav"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className="page-indicator">
+              {currentPage} de {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="btn-page-nav"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

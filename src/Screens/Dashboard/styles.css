@@ -221,8 +221,7 @@
 
 .grid-container {
   flex: 1;
-  padding: 16px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .loading-state {
