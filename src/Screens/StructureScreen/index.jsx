@@ -47,12 +47,6 @@ export default function TableStructureScreen({ selectedTable }) {
 
   return (
     <div className="structure-screen-container">
-      <div className="structure-header">
-        <h3>
-          Definição de Colunas de <span>{selectedTable}</span>
-        </h3>
-      </div>
-
       <div className="table-responsive-wrapper">
         <table className="data-table">
           <colgroup>
@@ -82,13 +76,7 @@ export default function TableStructureScreen({ selectedTable }) {
                 <tr key={col.name}>
                   <td style={{ textAlign: "center" }}>
                     <div className="cell-keys-container">
-                      {col.is_primary && (
-                        <Key
-                          size={14}
-                          className="icon-pk"
-                          title="Primary Key (Chave Primária)"
-                        />
-                      )}
+                      {col.is_primary && <Key size={14} className="icon-pk" />}
                       {col.is_foreign && (
                         <Link size={14} className="icon-fk" title={fkTitle} />
                       )}

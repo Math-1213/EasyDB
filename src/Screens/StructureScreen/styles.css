@@ -4,9 +4,16 @@
 .structure-screen-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 93%;
+  overflow: hidden;
   background-color: #18181b;
   box-sizing: border-box;
+}
+
+.table-responsive-wrapper {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
 }
 
 .structure-header {
@@ -40,7 +47,6 @@
 
 .icon-fk {
   color: #3b82f6;
-  cursor: help; /* Indica visualmente que há um tooltip ao parar o mouse */
 }
 
 .col-name-cell {

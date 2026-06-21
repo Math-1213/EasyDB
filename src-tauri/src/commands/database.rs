@@ -339,6 +339,7 @@ pub async fn get_table_structure(
         SELECT 
             c.column_name, 
             c.data_type, 
+            c.character_maximum_length, 
             c.is_nullable, 
             c.column_default,
             EXISTS (
@@ -374,16 +375,25 @@ pub async fn get_table_structure(
         .map_err(|e| e.to_string())?;
 
     let mut structure = Vec::new();
+
     for row in rows {
+        let raw_type: String = row.get(1);
+        let char_max_len: Option<i32> = row.get(2);
+
+        let data_type = match char_max_len {
+            Some(len) if raw_type == "character varying" => format!("varchar({})", len),
+            Some(len) if raw_type == "character" => format!("char({})", len),
+            _ => raw_type,
+        };
         structure.push(ColumnStructure {
             name: row.get(0),
-            data_type: row.get(1),
-            is_nullable: row.get(2),
-            column_default: row.get(3),
-            is_primary: row.get(4),
-            is_foreign: row.get(5),
-            foreign_target_table: row.get(6),
-            foreign_target_column: row.get(7),
+            data_type,
+            is_nullable: row.get(3),
+            column_default: row.get(4),
+            is_primary: row.get(5),
+            is_foreign: row.get(6),
+            foreign_target_table: row.get(7),
+            foreign_target_column: row.get(8),
         });
     }
     Ok(structure)
