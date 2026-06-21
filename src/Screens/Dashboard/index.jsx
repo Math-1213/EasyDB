@@ -161,7 +161,9 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
           />
         );
       case "uml":
-        return <UmlScreen selectedTable={selectedTable} />;
+        return (
+          <UmlScreen selectedTable={selectedTable} currentDb={currentDb} />
+        );
       default:
         return null;
     }

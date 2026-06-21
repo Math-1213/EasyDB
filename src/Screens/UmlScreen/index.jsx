@@ -11,6 +11,7 @@ import {
 import dagre from "@dagrejs/dagre";
 import "@xyflow/react/dist/style.css";
 import "./styles.css";
+import { getCache, setCache } from "./UmlCache";
 
 const getLayoutedElements = (nodes, edges, direction = "TB") => {
   const dagreGraph = new dagre.graphlib.Graph();
@@ -48,7 +49,7 @@ const getLayoutedElements = (nodes, edges, direction = "TB") => {
   };
 };
 
-function UmlCanvas({ selectedTable }) {
+function UmlCanvas({ selectedTable, currentDb }) {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,8 +61,23 @@ function UmlCanvas({ selectedTable }) {
   // EFECT 1: Roda APENAS UMA VEZ ao montar a tela para construir a estrutura do banco
   useEffect(() => {
     async function initDiagram() {
+      // Verifica cache primeiro
+      const cached = getCache(currentDb);
+      console.log("Cached:", !!cached);
+      console.log("Current DB:", currentDb);
+
+      if (cached) {
+        setNodes(cached.nodes);
+        setEdges(cached.edges);
+        return;
+      }
+
       setLoading(true);
+
+      // Limpa valores anteriores
       setError("");
+      setNodes([]);
+      setEdges([]);
       try {
         const tables = await invoke("get_tables");
         const rels = await invoke("get_db_relationships");
@@ -135,6 +151,7 @@ function UmlCanvas({ selectedTable }) {
         const { nodes: layoutedNodes, edges: layoutedEdges } =
           getLayoutedElements(initialNodes, initialEdges);
 
+        setCache(currentDb, { nodes: layoutedNodes, edges: layoutedEdges });
         setNodes(layoutedNodes);
         setEdges(layoutedEdges);
       } catch (err) {
@@ -145,7 +162,7 @@ function UmlCanvas({ selectedTable }) {
     }
 
     initDiagram();
-  }, []); // Dependência vazia garante apenas uma execução de busca
+  }, [currentDb]);
 
   // EFFECT 2: Centraliza e atualiza o estado do nó ativo instantaneamente sem recarregar o banco
   useEffect(() => {
@@ -243,19 +260,15 @@ function UmlCanvas({ selectedTable }) {
 
   return (
     <div className="uml-screen-container">
-      <div className="uml-header">
-        <h3>Diagrama de Entidade-Relacionamento do Banco</h3>
-        <p>
-          Organizado. Clique em uma tabela ou selecione na barra lateral para
-          focar.
-        </p>
-      </div>
       <div className="uml-canvas-wrapper">
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodeClick={(_, node) => setHoveredOrClickedNode(node.id)}
           onPaneClick={() => setHoveredOrClickedNode(null)}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          connectOnClick={false}
           fitView
         >
           <Background color="#1e293b" gap={18} size={1} />
@@ -266,10 +279,10 @@ function UmlCanvas({ selectedTable }) {
   );
 }
 
-export default function UmlScreen({ selectedTable }) {
+export default function UmlScreen({ selectedTable, currentDb }) {
   return (
     <ReactFlowProvider>
-      <UmlCanvas selectedTable={selectedTable} />
+      <UmlCanvas selectedTable={selectedTable} currentDb={currentDb} />
     </ReactFlowProvider>
   );
 }

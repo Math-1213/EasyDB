@@ -4,7 +4,7 @@
 .structure-screen-container {
   display: flex;
   flex-direction: column;
-  height: 93%;
+  height: 100%;
   overflow: hidden;
   background-color: #18181b;
   box-sizing: border-box;

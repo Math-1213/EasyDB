@@ -102,3 +102,82 @@
     stroke-width 0.2s ease,
     opacity 0.2s ease;
 }
+
+.react-flow {
+  --xy-background-color: #0b0f19;
+  --xy-node-background-color: #1e293b;
+  --xy-node-border-color: #334155;
+  --xy-node-color: #f1f5f9;
+  --xy-controls-button-background-color: #1e293b;
+  --xy-controls-button-background-color-hover: #334155;
+  --xy-controls-button-border-color: #334155;
+  --xy-controls-button-color: #94a3b8;
+  --xy-controls-button-color-hover: #f1f5f9;
+  --xy-minimap-background-color: #0f172a;
+  --xy-minimap-node-background-color: #1e293b;
+}
+
+.react-flow__renderer,
+.react-flow__pane {
+  background-color: #0b0f19;
+}
+
+.react-flow__edge-textbg {
+  fill: #0f172a !important;
+}
+
+.react-flow__edge-text {
+  fill: #64748b !important;
+}
+
+.react-flow__edge-textbg,
+.react-flow__edge-text {
+  z-index: 10;
+}
+
+.react-flow__controls {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.react-flow__controls-button {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  fill: #94a3b8;
+}
+
+.react-flow__controls-button:hover {
+  background-color: #334155;
+  fill: #f1f5f9;
+}
+
+.react-flow__minimap {
+  background-color: #0f172a;
+  border: 1px solid #1e293b;
+}
+
+.react-flow__attribution {
+  background-color: transparent;
+}
+
+.react-flow__attribution a {
+  color: #334155 !important;
+}
+
+.react-flow__node.selected,
+.react-flow__node:focus {
+  outline: none;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Labels de edges sempre acima das linhas */
+.react-flow__edge-labelrenderer {
+  z-index: 10;
+}
+
+/* Garante que os nós fiquem acima das arestas */
+.react-flow__nodes {
+  z-index: 5;
+}
