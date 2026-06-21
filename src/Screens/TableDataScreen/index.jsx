@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core"; // Ou de onde você importa seus comandos nativos
 import {
   Plus,
@@ -43,6 +43,10 @@ export default function TableDataScreen({ tableName }) {
     colIndex: null,
   });
   const [editValue, setEditValue] = useState("");
+  const [savingCell, setSavingCell] = useState({
+    rowIndex: null,
+    colIndex: null,
+  });
 
   // Dispara a busca no banco sempre que qualquer parâmetro mudar
   useEffect(() => {
@@ -158,53 +162,55 @@ export default function TableDataScreen({ tableName }) {
     setEditValue(formatCellValue(currentValue));
   };
 
-  const handleSaveUpdate = async (rowIndex, colIndex) => {
-    // Pegamos o valor diretamente do estado controlado 'editValue'
-    const newValue = editValue;
+  const isSavingRef = useRef(false);
 
+  const handleSaveUpdate = async (rowIndex, colIndex) => {
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
+
+    const newValue = editValue;
     setEditingCell({ rowIndex: null, colIndex: null });
     setLoading(true);
     setError("");
 
     try {
-      // 1. Busca a estrutura para identificar qual coluna é a PK
-      const structure = await invoke("get_table_structure", {
-        tableName: tableName, // Correção: de selectedTable para tableName
-      });
+      setSavingCell({ rowIndex, colIndex });
+      const structure = await invoke("get_table_structure", { tableName });
       const pkColumnInfo = structure.find((c) => c.is_primary);
 
       if (!pkColumnInfo) {
-        throw new Error(
-          "Não foi possível atualizar: esta tabela não possui uma Primary Key definida.",
-        );
+        throw new Error("Tabela sem Primary Key definida.");
       }
 
-      const pkColumnName = pkColumnInfo.name;
+      const pkColIndex = columns.indexOf(pkColumnInfo.name);
+      const columnName = columns[colIndex];
+      const pkValue = rows[rowIndex][pkColIndex];
 
-      // 2. Localiza o index do cabeçalho correspondente à PK e à coluna atual
-      const pkColIndex = columns.indexOf(pkColumnName); // Correção: de tableData.columns para columns
-      const columnName = columns[colIndex]; // Correção: de tableData.columns para columns
-
-      // 3. Pega o valor identificador da linha atual
-      const pkValue = rows[rowIndex][pkColIndex]; // Correção: de tableData.rows para rows
-
-      // 4. Dispara o update para o Rust
       await invoke("update_table_cell", {
-        tableName: tableName, // Correção: de selectedTable para tableName
-        columnName: columnName,
-        newValue: newValue,
-        pkColumn: pkColumnName,
+        tableName,
+        columnName,
+        newValue,
+        pkColumn: pkColumnInfo.name,
         pkValue: String(pkValue),
       });
 
-      // 5. Recarrega os dados atualizados do banco
       await fetchDataFromBackend();
     } catch (err) {
-      console.error(err);
-      setError(`Erro ao atualizar registro: ${err.message || err}`);
+      setError(`Erro ao atualizar: ${err.message || err}`);
     } finally {
       setLoading(false);
+      setSavingCell({ rowIndex: null, colIndex: null });
+      isSavingRef.current = false; // ← libera após terminar
     }
+  };
+
+  const handleCellBlur = (rowIndex, colIndex, originalValue) => {
+    const original = formatCellValue(originalValue);
+    if (editValue === original) {
+      setEditingCell({ rowIndex: null, colIndex: null });
+      return;
+    }
+    handleSaveUpdate(rowIndex, colIndex);
   };
 
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
@@ -240,6 +246,11 @@ export default function TableDataScreen({ tableName }) {
 
   return (
     <div className="table-screen-container">
+      {error && (
+        <div className="error-banner" style={{ flexShrink: 0 }}>
+          {error}
+        </div>
+      )}
       {/* Filtros */}
       <div className="filter-builder-zone">
         <div className="filter-builder-header">
@@ -387,6 +398,9 @@ export default function TableDataScreen({ tableName }) {
                     const isEditing =
                       editingCell.rowIndex === rowIndex &&
                       editingCell.colIndex === cellIndex;
+                    const isSaving =
+                      savingCell.rowIndex === rowIndex &&
+                      savingCell.colIndex === cellIndex;
                     const stringifiedValue = formatCellValue(cell);
 
                     return (
@@ -396,13 +410,18 @@ export default function TableDataScreen({ tableName }) {
                           handleCellDoubleClick(rowIndex, cellIndex, cell)
                         }
                         title={stringifiedValue}
+                        style={
+                          isSaving ? { opacity: 0.5, fontStyle: "italic" } : {}
+                        } // ← feedback
                       >
                         {isEditing ? (
                           <input
                             type="text"
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
-                            onBlur={() => handleSaveUpdate(rowIndex, cellIndex)}
+                            onBlur={() =>
+                              handleCellBlur(rowIndex, cellIndex, cell)
+                            } // ← passa valor original
                             onKeyDown={(e) => {
                               if (e.key === "Enter")
                                 handleSaveUpdate(rowIndex, cellIndex);
