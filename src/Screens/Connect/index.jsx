@@ -30,23 +30,30 @@ function ConnectScreen({ onConnectSuccess }) {
     setConfig((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleConnect = async (e) => {
-    e.preventDefault();
+  const connectWithConfig = async (connectionConfig) => {
     setLoading(true);
     setStatus("Tentando conectar...");
 
     try {
-      const response = await invoke("connect_db", { config });
+      const response = await invoke("connect_db", {
+        config: connectionConfig,
+      });
+
       setStatus(response);
 
       if (response === "Conectado com sucesso!") {
-        onConnectSuccess({ ...config });
+        onConnectSuccess({ ...connectionConfig });
       }
     } catch (error) {
       setStatus(`Erro: ${error}`);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleConnect = async (e) => {
+    e.preventDefault();
+    await connectWithConfig(config);
   };
 
   const handleSavePreset = (e) => {
@@ -76,6 +83,14 @@ function ConnectScreen({ onConnectSuccess }) {
     localStorage.setItem("easypost_presets", JSON.stringify(newList));
   };
 
+  const handlePresetDoubleClick = async (preset) => {
+    if (presetToDelete) return;
+
+    setConfig({ ...preset.config });
+
+    await connectWithConfig(preset.config);
+  };
+
   return (
     <div className="login-container">
       <h1>EasyPost</h1>
@@ -92,6 +107,7 @@ function ConnectScreen({ onConnectSuccess }) {
                   key={p.id}
                   className={`preset-badge ${isConfirming ? "confirming" : ""}`}
                   onClick={() => handleSelectPreset(p)}
+                  onDoubleClick={() => handlePresetDoubleClick(p)}
                 >
                   <span>{isConfirming ? "Excluir?" : p.name}</span>
 

@@ -55,6 +55,21 @@ function App() {
     }
   };
 
+  const handleDisconnect = () => {
+    if (!activeTabId) return;
+
+    const filteredTabs = tabs.filter((tab) => tab.id !== activeTabId);
+
+    setTabs(filteredTabs);
+
+    if (filteredTabs.length > 0) {
+      setActiveTabId(filteredTabs[filteredTabs.length - 1].id);
+    } else {
+      setActiveTabId(null);
+      setShowConnect(true);
+    }
+  };
+
   const activeTab = tabs.find((t) => t.id === activeTabId);
 
   return (
@@ -101,6 +116,7 @@ function App() {
             <DashboardScreen
               config={activeTab?.config}
               onUpdateTabConfig={handleUpdateTabConfig}
+              onDisconnect={() => handleDisconnect()}
             />
           </div>
         )}
