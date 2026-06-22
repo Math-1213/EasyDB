@@ -8,6 +8,7 @@ import {
   Code,
   PlayCircle,
   Network,
+  Zap,
 } from "lucide-react";
 import "./styles.css";
 import "../../App.css";
@@ -17,6 +18,7 @@ import TableStructureScreen from "../StructureScreen";
 import QueryTextScreen from "../QueryTextScreen";
 import QueryDynamicScreen from "../QueryDynamicScreen";
 import UmlScreen from "../UmlScreen";
+import FunctionsScreen from "../FunctionsScreen";
 
 function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
   const [databases, setDatabases] = useState([]);
@@ -164,6 +166,8 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
         return (
           <UmlScreen selectedTable={selectedTable} currentDb={currentDb} />
         );
+      case "functions":
+        return <FunctionsScreen currentDb={currentDb} />;
       default:
         return null;
     }
@@ -262,6 +266,12 @@ function DashboardScreen({ onDisconnect, config, onUpdateTabConfig }) {
               onClick={() => setActiveTab("uml")}
             >
               <Network size={14} /> Diagrama UML
+            </button>
+            <button
+              className={`tab-btn ${activeTab === "functions" ? "active" : ""}`}
+              onClick={() => setActiveTab("functions")}
+            >
+              <Zap size={14} /> Functions
             </button>
           </nav>
         </header>
