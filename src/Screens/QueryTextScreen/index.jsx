@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
+import { downloadDir } from "@tauri-apps/api/path";
 import {
   Play,
   Database,
@@ -10,6 +10,8 @@ import {
   CheckCircle,
 } from "lucide-react";
 import "./styles.css";
+import * as fs from "@tauri-apps/plugin-fs";
+import { isTauri } from "@tauri-apps/api/core";
 
 export default function QueryTextScreen({ selectedTable }) {
   const [sql, setSql] = useState("");
@@ -19,6 +21,12 @@ export default function QueryTextScreen({ selectedTable }) {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
+    console.log("TAURI:", window.__TAURI__);
+    console.log(fs);
+    console.log("isTauri =", isTauri());
+  }, []);
+
+  useEffect(() => {
     if (selectedTable) {
       setSql(`SELECT * FROM ${selectedTable} LIMIT 100;`);
     } else {
@@ -26,17 +34,12 @@ export default function QueryTextScreen({ selectedTable }) {
     }
   }, [selectedTable]);
 
-  // Limpa o banner de sucesso após 5 segundos
   useEffect(() => {
     if (successMessage) {
       const timer = setTimeout(() => setSuccessMessage(""), 5000);
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
-
-  useEffect(() => {
-    console.log(error);
-  }, [error]);
 
   const handleExecute = async () => {
     if (!sql.trim()) return;
@@ -55,17 +58,14 @@ export default function QueryTextScreen({ selectedTable }) {
     }
   };
 
-  // Exportação para CSV usando o diálogo nativo do Tauri
+  // Exportação para CSV
   const exportToCSV = async () => {
     if (!result || !result.columns.length) return;
 
     try {
-      const filePath = await save({
-        filters: [{ name: "CSV", extensions: ["csv"] }],
-        defaultPath: `query_result_${Date.now()}.csv`,
-      });
-
-      if (!filePath) return; // Usuário cancelou o diálogo
+      const downloads = await downloadDir();
+      const fileName = `query_result_${Date.now()}.csv`;
+      const filePath = `${downloads}/${fileName}`;
 
       const headerRow = result.columns.join(",");
       const dataRows = result.rows.map((row) =>
@@ -80,27 +80,24 @@ export default function QueryTextScreen({ selectedTable }) {
           .join(","),
       );
 
-      // Adiciona o caractere BOM UTF-8 para o Excel reconhecer os acentos
       const csvContent = "\uFEFF" + [headerRow, ...dataRows].join("\n");
 
       await writeTextFile(filePath, csvContent);
-      setSuccessMessage(`CSV exportado com sucesso em: ${filePath}`);
+      setSuccessMessage(`CSV exportado: ${fileName}`);
     } catch (err) {
-      setError(`Erro ao salvar arquivo CSV: ${err}`);
+      setError(`Erro ao salvar CSV: ${err}`);
+      console.error(err);
     }
   };
 
-  // Exportação para Excel (XLS) usando o diálogo nativo do Tauri
+  // Exportação para Excel (XLS)
   const exportToExcel = async () => {
     if (!result || !result.columns.length) return;
 
     try {
-      const filePath = await save({
-        filters: [{ name: "Excel 97-2003", extensions: ["xls"] }],
-        defaultPath: `query_result_${Date.now()}.xls`,
-      });
-
-      if (!filePath) return; // Usuário cancelou
+      const downloads = await downloadDir();
+      const fileName = `query_result_${Date.now()}.xls`;
+      const filePath = `${downloads}/${fileName}`;
 
       let html = "<table border='1'><thead><tr>";
       result.columns.forEach((col) => {
@@ -125,9 +122,9 @@ export default function QueryTextScreen({ selectedTable }) {
       `;
 
       await writeTextFile(filePath, template);
-      setSuccessMessage(`Excel exportado com sucesso em: ${filePath}`);
+      setSuccessMessage(`Excel exportado: ${fileName}`);
     } catch (err) {
-      setError(`Erro ao salvar arquivo Excel: ${err}`);
+      setError(`Erro ao salvar Excel: ${err}`);
     }
   };
 
@@ -160,7 +157,6 @@ export default function QueryTextScreen({ selectedTable }) {
           </div>
         )}
 
-        {/* Banner de aviso de download bem-sucedido com o caminho */}
         {successMessage && (
           <div className="success-banner flex-align">
             <CheckCircle size={16} style={{ marginRight: "8px" }} />

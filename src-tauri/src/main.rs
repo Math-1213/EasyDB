@@ -7,7 +7,9 @@ use commands::{connection, database};
 use state::AppState;
 
 fn main() {
+    println!("MAIN.RS EXECUTADO");
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
         .manage(AppState::default())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
